@@ -6,42 +6,50 @@ import "@openzeppelin/contracts/governance/extensions/GovernorCountingSimple.sol
 import "@openzeppelin/contracts/governance/extensions/GovernorVotes.sol";
 import "@openzeppelin/contracts/governance/extensions/GovernorVotesQuorumFraction.sol";
 import "@openzeppelin/contracts/governance/extensions/GovernorTimelockControl.sol";
-import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Votes.sol";
+import "@openzeppelin/contracts/governance/extensions/GovernorSettings.sol";
 
-// NOTE: Contract created with the help of --> https://wizard.openzeppelin.com/#governor
-
-contract Governance is
+contract MyGovernor is
     Governor,
+    GovernorSettings,
     GovernorCountingSimple,
     GovernorVotes,
     GovernorVotesQuorumFraction,
     GovernorTimelockControl
 {
-    uint256 public votingDelay_;
-    uint256 public votingPeriod_;
-
     constructor(
-        ERC20Votes _token,
+        IVotes _token,
         TimelockController _timelock,
-        uint256 _quorum,
-        uint256 _votingDelay,
-        uint256 _votingPeriod
+        uint256 _quorumPercentage,
+        uint256 _votingPeriod,
+        uint256 _votingDelay
     )
-        Governor("DApp University DAO")
+        Governor("MyGovernor")
+        GovernorSettings(
+            _votingDelay, /* 1 block */ // votind delay
+            _votingPeriod, // 45818, /* 1 week */ // voting period
+            0 // proposal threshold
+        )
         GovernorVotes(_token)
-        GovernorVotesQuorumFraction(_quorum)
+        GovernorVotesQuorumFraction(_quorumPercentage)
         GovernorTimelockControl(_timelock)
+    {}
+
+    function votingDelay()
+        public
+        view
+        override(IGovernor, GovernorSettings)
+        returns (uint256)
     {
-        votingDelay_ = _votingDelay;
-        votingPeriod_ = _votingPeriod;
+        return super.votingDelay();
     }
 
-    function votingDelay() public view override returns (uint256) {
-        return votingDelay_;
-    }
-
-    function votingPeriod() public view override returns (uint256) {
-        return votingPeriod_;
+    function votingPeriod()
+        public
+        view
+        override(IGovernor, GovernorSettings)
+        returns (uint256)
+    {
+        return super.votingPeriod();
     }
 
     // The following functions are overrides required by Solidity.
@@ -80,6 +88,15 @@ contract Governance is
         string memory description
     ) public override(Governor, IGovernor) returns (uint256) {
         return super.propose(targets, values, calldatas, description);
+    }
+
+    function proposalThreshold()
+        public
+        view
+        override(Governor, GovernorSettings)
+        returns (uint256)
+    {
+        return super.proposalThreshold();
     }
 
     function _execute(
