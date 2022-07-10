@@ -15,7 +15,7 @@ import moveTime from "../utils/moveTime";
 
 async function main() {
   // eslint-disable-next-line no-unused-vars
-  const [deployer, voter1, voter2, voter3, voter4, voter5, benefactor] =
+  const [deployer, voter1, voter2, voter3, voter4, voter5, payee] =
     await ethers.getSigners();
 
   // Deploy the token with a total supply of 1000 Tokens
@@ -83,10 +83,9 @@ async function main() {
   console.log("Roles setup done");
 
   // Deploy Treasury with initial funds of 50 Tokens
-  const treasury = await new Treasury__factory(deployer).deploy(
-    benefactor.address,
-    { value: ethers.utils.parseEther("50") }
-  );
+  const treasury = await new Treasury__factory(deployer).deploy({
+    value: ethers.utils.parseEther("50"),
+  });
   await treasury.deployed();
   // Set timelock as the owner of the box
   const transferOwnershipTx = await treasury.transferOwnership(
@@ -101,8 +100,10 @@ async function main() {
   );
 
   // Create a proposal
-  const encodedFunctionCall =
-    treasury.interface.encodeFunctionData("releaseFunds");
+  const encodedFunctionCall = treasury.interface.encodeFunctionData(
+    "releaseFunds",
+    [payee.address, ethers.utils.parseEther("50")]
+  );
   const proposalDescription = "Description";
   const proposeTx = await governor.propose(
     [treasury.address],
@@ -172,7 +173,7 @@ async function main() {
 
   console.log(
     `Benefactor balance: ${ethers.utils.formatEther(
-      await ethers.provider.getBalance(benefactor.address)
+      await ethers.provider.getBalance(payee.address)
     )} ETH`
   );
 }
