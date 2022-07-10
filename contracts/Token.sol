@@ -4,11 +4,11 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Votes.sol";
 
 contract Token is ERC20Votes {
-    // 1,000,000 Tokens
-    uint256 public s_maxSupply = 1000000000000000000000000;
-
-    constructor() ERC20("Token", "T") ERC20Permit("Token") {
-        _mint(msg.sender, s_maxSupply);
+    constructor(uint256 _initialSupply)
+        ERC20("Token", "T")
+        ERC20Permit("Token")
+    {
+        _mint(msg.sender, _initialSupply);
     }
 
     // The functions below are overrides required by Solidity.
