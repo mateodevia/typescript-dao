@@ -12,8 +12,8 @@ import {
   MyGovernor__factory,
   Treasury__factory,
 } from "../typechain";
-import moveBlocks from "../utils/moveBlocks";
-import moveTime from "../utils/moveTime";
+import fs from "fs";
+import constants from "./constants";
 
 /**
  *
@@ -119,105 +119,32 @@ export const deploy = async (
 };
 
 async function main() {
-  const [deployer, voter1, voter2, voter3, voter4, voter5, payee] =
+  const [deployer, voter1, voter2, voter3, voter4, voter5] =
     await ethers.getSigners();
 
-  // Config
-  const minDelay = 1;
-  const quorum = 5;
-  const votingDelay = 0;
-  const votingPeriod = 10;
-
   // Deploy contracts
-  const { governor, treasury } = await deploy(
+  const { token, timeLock, governor, treasury } = await deploy(
     1000,
     50,
     { deployer, investors: [voter1, voter2, voter3, voter4, voter5] },
     {
-      minDelay,
-      quorum,
-      votingDelay,
-      votingPeriod,
+      minDelay: constants.minDelay,
+      quorum: constants.quorum,
+      votingDelay: constants.votingDelay,
+      votingPeriod: constants.votingPeriod,
     }
   );
   console.log("Contracts deployed");
 
-  // Create a proposal
-  const encodedFunctionCall = treasury.interface.encodeFunctionData(
-    "releaseFunds",
-    [payee.address, ethers.utils.parseEther("50")]
-  );
-  const proposalDescription = "Description";
-  const proposeTx = await governor.propose(
-    [treasury.address],
-    [0],
-    [encodedFunctionCall],
-    proposalDescription
-  );
-  const proposeReceipt = await proposeTx.wait(1);
-  const proposalId = proposeReceipt.events![0].args!.proposalId;
-  console.log("Created Proposal");
-  await moveBlocks(votingDelay + 1);
-  console.log(`Current Proposal State: ${await governor.state(proposalId)}`);
-
-  // Voting
-  // 1 = for, 0 = against, 2 = abstain
-  const vote1 = await governor.connect(voter1).castVote(proposalId, 1);
-  await vote1.wait(1);
-  const vote2 = await governor.connect(voter2).castVote(proposalId, 1);
-  await vote2.wait(1);
-  const vote3 = await governor.connect(voter3).castVote(proposalId, 1);
-  await vote3.wait(1);
-  const vote4 = await governor.connect(voter4).castVote(proposalId, 0);
-  await vote4.wait(1);
-  const vote5 = await governor.connect(voter5).castVote(proposalId, 2);
-  await vote5.wait(1);
-  console.log("Voted for the proposal");
-  await moveBlocks(votingPeriod + 1);
-  const { againstVotes, forVotes, abstainVotes } = await governor.proposalVotes(
-    proposalId
-  );
-  console.log({
-    againstVotes: ethers.utils.formatEther(againstVotes),
-    forVotes: ethers.utils.formatEther(forVotes),
-    abstainVotes: ethers.utils.formatEther(abstainVotes),
-  });
-  console.log(`Current Proposal State: ${await governor.state(proposalId)}`);
-
-  // Queue the approved proposal
-  const queueTx = await governor.queue(
-    [treasury.address],
-    [0],
-    [encodedFunctionCall],
-    ethers.utils.id(proposalDescription)
-  );
-  await queueTx.wait(1);
-  await moveTime(minDelay + 1);
-  await moveBlocks(1);
-  console.log("Queued the proposal");
-  console.log(`Current Proposal State: ${await governor.state(proposalId)}`);
-
-  // Excecuting the proposal
-  const excecuteTx = await governor.execute(
-    [treasury.address],
-    [0],
-    [encodedFunctionCall],
-    ethers.utils.id(proposalDescription)
-  );
-  await excecuteTx.wait(1);
-  console.log("Executed the proposal");
-  console.log(`Current Proposal State: ${await governor.state(proposalId)}`);
-
-  console.log(
-    `Treasury balance: ${ethers.utils.formatEther(
-      await ethers.provider.getBalance(treasury.address)
-    )} ETH`
-  );
-
-  console.log(
-    `Benefactor balance: ${ethers.utils.formatEther(
-      await ethers.provider.getBalance(payee.address)
-    )} ETH`
+  // Persist the deployed addresses on a .json file
+  fs.writeFileSync(
+    constants.addressFile,
+    JSON.stringify({
+      Token: token.address,
+      Timelock: timeLock.address,
+      Governor: governor.address,
+      Treasury: treasury.address,
+    })
   );
 }
 
