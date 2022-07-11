@@ -17,6 +17,15 @@ import fs from "fs";
 // eslint-disable-next-line node/no-extraneous-import
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 
+/**
+ * @param payee Wallet that will receive the released funds
+ * @param amount Amount of treasury funds to be released
+ * @param proposalDescription Description of the proposal
+ * @param contracts Addresses of the contracts to use
+ * @param contracts.treasury The treasury contract
+ * @param contracts.governor The governor contract
+ * @returns The proposalId of the created proposal
+ */
 export const proposeReleaseFundsToPayee = async (
   payee: SignerWithAddress,
   amount: number,
