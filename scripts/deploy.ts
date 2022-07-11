@@ -3,6 +3,8 @@
 //
 // When running the script with `npx hardhat run <script>` you'll find the Hardhat
 // Runtime Environment's members available in the global scope.
+// eslint-disable-next-line node/no-extraneous-import
+import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { ethers } from "hardhat";
 import {
   Token__factory,
@@ -13,56 +15,75 @@ import {
 import moveBlocks from "../utils/moveBlocks";
 import moveTime from "../utils/moveTime";
 
-async function main() {
-  // eslint-disable-next-line no-unused-vars
-  const [deployer, voter1, voter2, voter3, voter4, voter5, payee] =
-    await ethers.getSigners();
-
+/**
+ *
+ * @param {number} tokenSupply Amount of tokens (stocks) available to distribute voting power
+ * @param {number} treasuryInitialSupply Initial investment for the treasury in ETH
+ * @param {Object} participants Addresses of the DAO participants
+ * @param {SignerWithAddress} participants.deployer Signer that will deploy the contracts
+ * @param {SignerWithAddress[]} participants.investors Array of Signers with voting power
+ * @param {Object} votingConfig Voting process parameters
+ * @param {number} votingConfig.minDelay How long do we have to wait until we can excecute after
+ * @param {number} votingConfig.quorum Percentage of total supply of tokens needed to be approve proposals (1 = 1%)
+ * @param {number} votingConfig.votingDelay How many blocks after proposal until voting becomes active
+ * @param {number} votingConfig.votingPeriod How many blocks to allow voters to vote
+ */
+export const deploy = async (
+  tokenSupply: number,
+  treasuryInitialSupply: number,
+  participants: {
+    deployer: SignerWithAddress;
+    investors: SignerWithAddress[];
+  },
+  votingConfig: {
+    minDelay: number;
+    quorum: number;
+    votingDelay: number;
+    votingPeriod: number;
+  }
+) => {
   // Deploy the token with a total supply of 1000 Tokens
-  const supply = ethers.utils.parseEther("1000");
-  const token = await new Token__factory(deployer).deploy(supply);
+  const supply = ethers.utils.parseEther(tokenSupply.toString());
+  const token = await new Token__factory(participants.deployer).deploy(supply);
   await token.deployed();
-  console.log("Token deployed");
 
-  // Give 50 tokens to each voter
-  const amount = ethers.utils.parseEther("50");
-  await token.transfer(voter1.address, amount);
-  await token.transfer(voter2.address, amount);
-  await token.transfer(voter3.address, amount);
-  await token.transfer(voter4.address, amount);
-  await token.transfer(voter5.address, amount);
+  // Divide the total token supply (stocks) in the amount of initial investors
+  const amount = ethers.utils.parseEther(
+    ((tokenSupply - 500) / participants.investors.length).toString()
+  );
+
+  // Give 20% of the tokens to each voter
+  await Promise.all([
+    ...participants.investors.map((investor) =>
+      token.transfer(investor.address, amount)
+    ),
+  ]);
 
   // Each voter should delagate its voting power (represented by their tokens)
   // In this case each voter delagates to itself
-  await token.connect(voter1).delegate(voter1.address);
-  await token.connect(voter2).delegate(voter2.address);
-  await token.connect(voter3).delegate(voter3.address);
-  await token.connect(voter4).delegate(voter4.address);
-  await token.connect(voter5).delegate(voter5.address);
+  await Promise.all([
+    ...participants.investors.map((investor) =>
+      token.connect(investor).delegate(investor.address)
+    ),
+  ]);
 
   // Deploy time lock
-  const minDelay = 1; // How long do we have to wait until we can excecute after
-  const timeLock = await new TimeLock__factory(deployer).deploy(
-    minDelay,
+  const timeLock = await new TimeLock__factory(participants.deployer).deploy(
+    votingConfig.minDelay,
     [],
     []
   );
   await timeLock.deployed();
-  console.log("Timelock deployed");
 
   // Deploy Governor
-  const quorum = 5; // Percentage of total supply of tokens needed to be approve proposals (1%)
-  const votingDelay = 0; // How many blocks after proposal until voting becomes active
-  const votingPeriod = 10; // How many blockst to allow voters to vote
-  const governor = await new MyGovernor__factory(deployer).deploy(
+  const governor = await new MyGovernor__factory(participants.deployer).deploy(
     token.address,
     timeLock.address,
-    quorum,
-    votingPeriod,
-    votingDelay
+    votingConfig.quorum,
+    votingConfig.votingPeriod,
+    votingConfig.votingDelay
   );
   await governor.deployed();
-  console.log("Governor Deployed");
 
   // Setup governance contracts
   const proposerRole = await timeLock.PROPOSER_ROLE();
@@ -78,13 +99,15 @@ async function main() {
   );
   await executorTx.wait(1);
   // No one owns the timeLock, not even deployer
-  const revokeTx = await timeLock.revokeRole(adminRole, deployer.address);
+  const revokeTx = await timeLock.revokeRole(
+    adminRole,
+    participants.deployer.address
+  );
   await revokeTx.wait(1);
-  console.log("Roles setup done");
 
-  // Deploy Treasury with initial funds of 50 Tokens
-  const treasury = await new Treasury__factory(deployer).deploy({
-    value: ethers.utils.parseEther("50"),
+  // Deploy Treasury with initial funds
+  const treasury = await new Treasury__factory(participants.deployer).deploy({
+    value: ethers.utils.parseEther(treasuryInitialSupply.toString()),
   });
   await treasury.deployed();
   // Set timelock as the owner of the box
@@ -92,12 +115,32 @@ async function main() {
     timeLock.address
   );
   await transferOwnershipTx.wait(1);
-  console.log("Treasury Deployed");
-  console.log(
-    `Treasury balance: ${ethers.utils.formatEther(
-      await ethers.provider.getBalance(treasury.address)
-    )} ETH`
+  return { token, timeLock, governor, treasury };
+};
+
+async function main() {
+  const [deployer, voter1, voter2, voter3, voter4, voter5, payee] =
+    await ethers.getSigners();
+
+  // Config
+  const minDelay = 1;
+  const quorum = 5;
+  const votingDelay = 0;
+  const votingPeriod = 10;
+
+  // Deploy contracts
+  const { governor, treasury } = await deploy(
+    1000,
+    50,
+    { deployer, investors: [voter1, voter2, voter3, voter4, voter5] },
+    {
+      minDelay,
+      quorum,
+      votingDelay,
+      votingPeriod,
+    }
   );
+  console.log("Contracts deployed");
 
   // Create a proposal
   const encodedFunctionCall = treasury.interface.encodeFunctionData(
