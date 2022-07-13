@@ -11,6 +11,10 @@ import {
   TimeLock__factory,
   MyGovernor__factory,
   Treasury__factory,
+  MyGovernor,
+  Treasury,
+  Token,
+  TimeLock,
 } from "../typechain";
 import fs from "fs";
 import constants from "./constants";
@@ -41,7 +45,12 @@ export const deploy = async (
     votingDelay: number;
     votingPeriod: number;
   }
-) => {
+): Promise<{
+  token: Token;
+  timeLock: TimeLock;
+  governor: MyGovernor;
+  treasury: Treasury;
+}> => {
   // Deploy the token with a total supply of 1000 Tokens
   const supply = ethers.utils.parseEther(tokenSupply.toString());
   const token = await new Token__factory(participants.deployer).deploy(supply);
