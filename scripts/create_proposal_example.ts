@@ -5,57 +5,11 @@
 // Runtime Environment's members available in the global scope.
 // eslint-disable-next-line node/no-extraneous-import
 import { ethers } from "hardhat";
-import {
-  MyGovernor,
-  MyGovernor__factory,
-  Treasury,
-  Treasury__factory,
-} from "../typechain";
+import { MyGovernor__factory, Treasury__factory } from "../typechain";
 import moveBlocks from "../utils/moveBlocks";
 import constants from "./constants";
 import fs from "fs";
-// eslint-disable-next-line node/no-extraneous-import
-import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-
-/**
- * @param payee Wallet that will receive the released funds
- * @param amount Amount of treasury funds to be released
- * @param proposalDescription Description of the proposal
- * @param contracts Addresses of the contracts to use
- * @param contracts.treasury The treasury contract
- * @param contracts.governor The governor contract
- * @returns The proposalId, and the encodedFunction of the created proposal
- */
-export const proposeReleaseFundsToPayee = async (
-  payee: SignerWithAddress,
-  amount: number,
-  proposalDescription: string,
-  contracts: {
-    treasury: Treasury;
-    governor: MyGovernor;
-  }
-): Promise<{ proposalId: string; encodedFunction: string }> => {
-  // Encode the function and argments to propose
-  const encodedFunction = contracts.treasury.interface.encodeFunctionData(
-    "releaseFunds",
-    [payee.address, ethers.utils.parseEther(amount.toString())]
-  );
-
-  // Make the proposal
-  const proposeTx = await contracts.governor.propose(
-    [contracts.treasury.address],
-    [0],
-    [encodedFunction],
-    proposalDescription
-  );
-
-  // Retrieve proposal id
-  const proposeReceipt = await proposeTx.wait(1);
-  return {
-    proposalId: proposeReceipt.events![0].args!.proposalId,
-    encodedFunction,
-  };
-};
+import { proposeReleaseFundsToPayee } from "./api/proposal";
 
 async function main() {
   // eslint-disable-next-line no-unused-vars

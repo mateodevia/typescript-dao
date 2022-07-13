@@ -5,34 +5,11 @@
 // Runtime Environment's members available in the global scope.
 // eslint-disable-next-line node/no-extraneous-import
 import { ethers } from "hardhat";
-import { MyGovernor, MyGovernor__factory } from "../typechain";
+import { MyGovernor__factory } from "../typechain";
 import moveBlocks from "../utils/moveBlocks";
 import constants from "./constants";
 import fs from "fs";
-// eslint-disable-next-line node/no-extraneous-import
-import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-
-/**
- * @param voter Siner that will post the vote
- * @param proposalId Id of the proposal to vote for
- * @param vote 1 = for, 0 = against, 2 = abstain
- * @param contracts Addresses of the contracts to use
- * @param contracts.governor The governor contract
- */
-export const voteForProposal = async (
-  voter: SignerWithAddress,
-  proposalId: string,
-  vote: number,
-  contracts: {
-    governor: MyGovernor;
-  }
-): Promise<void> => {
-  // Voting
-  const vote1 = await contracts.governor
-    .connect(voter)
-    .castVote(proposalId, vote);
-  await vote1.wait(1);
-};
+import { voteForProposal } from "./api/proposal";
 
 async function main() {
   // eslint-disable-next-line no-unused-vars

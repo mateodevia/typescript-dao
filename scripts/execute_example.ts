@@ -5,66 +5,12 @@
 // Runtime Environment's members available in the global scope.
 // eslint-disable-next-line node/no-extraneous-import
 import { ethers } from "hardhat";
-import {
-  MyGovernor,
-  MyGovernor__factory,
-  Treasury,
-  Treasury__factory,
-} from "../typechain";
+import { MyGovernor__factory, Treasury__factory } from "../typechain";
 import moveBlocks from "../utils/moveBlocks";
 import moveTime from "../utils/moveTime";
 import constants from "./constants";
 import fs from "fs";
-
-/**
- * @param proposalDescription Description of the proposal to execute
- * @param encodedFunction Encoded function of the proposal to execute
- * @param contracts Addresses of the contracts to use
- * @param contracts.treasury The treasury contract
- * @param contracts.governor The governor contract
- */
-export const queueProposal = async (
-  proposalDescription: string,
-  encodedFunction: string,
-  contracts: {
-    governor: MyGovernor;
-    treasury: Treasury;
-  }
-): Promise<void> => {
-  // Queue the approved proposal
-  const queueTx = await contracts.governor.queue(
-    [contracts.treasury.address],
-    [0],
-    [encodedFunction],
-    ethers.utils.id(proposalDescription)
-  );
-  await queueTx.wait(1);
-};
-
-/**
- * @param proposalDescription Description of the proposal to execute
- * @param encodedFunction Encoded function of the proposal to execute
- * @param contracts Addresses of the contracts to use
- * @param contracts.treasury The treasury contract
- * @param contracts.governor The governor contract
- */
-export const excecuteProposal = async (
-  proposalDescription: string,
-  encodedFunction: string,
-  contracts: {
-    governor: MyGovernor;
-    treasury: Treasury;
-  }
-): Promise<void> => {
-  // Excecuting the proposal
-  const excecuteTx = await contracts.governor.execute(
-    [contracts.treasury.address],
-    [0],
-    [encodedFunction],
-    ethers.utils.id(proposalDescription)
-  );
-  await excecuteTx.wait(1);
-};
+import { excecuteProposal, queueProposal } from "./api/proposal";
 
 async function main() {
   // eslint-disable-next-line no-unused-vars
