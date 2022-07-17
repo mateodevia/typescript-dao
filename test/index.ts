@@ -1,6 +1,7 @@
 import { ethers } from "hardhat";
 import { expect } from "chai";
 import { deploy } from "../scripts/api/deployment";
+import { loadFixture } from "ethereum-waffle";
 
 describe("When deploying the smart contracts", function () {
   const tokenSupply = 1000;
@@ -90,5 +91,106 @@ describe("When deploying the smart contracts", function () {
 
     // The treasury contract should be owned by the timelock contract
     expect(await treasury.owner()).to.be.equal(timeLock.address);
+  });
+});
+
+describe("Token Contract", () => {
+  const tokenSupply = 1000;
+  const treasurySupply = 50;
+  const minDelay = 1;
+  const quorum = 5;
+  const votingDelay = 1;
+  const votingPeriod = 10;
+  const deployFixture = async () => {
+    const [deployer, voter1, voter2, voter3, voter4, voter5] =
+      await ethers.getSigners();
+    return await deploy(
+      tokenSupply,
+      treasurySupply,
+      { deployer, investors: [voter1, voter2, voter3, voter4, voter5] },
+      {
+        minDelay,
+        quorum,
+        votingDelay,
+        votingPeriod,
+      }
+    );
+  };
+
+  describe("When transfering tokens from one address to another", () => {
+    it("Should remove tokens from the sender address and add them to the recipient address", async () => {
+      // ARRANGE
+      const [deployer, voter1, voter2] = await ethers.getSigners();
+      const { token } = await loadFixture(deployFixture);
+      const senderOriginalBalance = Number(
+        ethers.utils.formatEther(await token.balanceOf(voter1.address))
+      );
+      const recipientOriginalBalance = Number(
+        ethers.utils.formatEther(await token.balanceOf(voter2.address))
+      );
+
+      // ACT
+      // Send 10 tokens from voter1 to voter2
+      await token
+        .connect(voter1)
+        .transfer(voter2.address, ethers.utils.parseEther("10"));
+
+      // ASSERT
+      const senderFinalBalance = Number(
+        ethers.utils.formatEther(await token.balanceOf(voter1.address))
+      );
+      const recipientFinalBalance = Number(
+        ethers.utils.formatEther(await token.balanceOf(voter2.address))
+      );
+      expect(senderFinalBalance).to.equal(senderOriginalBalance - 10);
+      expect(recipientFinalBalance).to.equal(recipientOriginalBalance + 10);
+    });
+    it("Should not allow to transfer more token than the ones owned by the sender", async () => {
+      // ARRANGE
+      const [deployer, voter1, voter2] = await ethers.getSigners();
+      const { token } = await loadFixture(deployFixture);
+      const sourceOriginalBalance = Number(
+        ethers.utils.formatEther(await token.balanceOf(voter1.address))
+      );
+      const targetOriginalBalance = Number(
+        ethers.utils.formatEther(await token.balanceOf(voter2.address))
+      );
+
+      // ACT
+      const promise = token
+        .connect(voter1)
+        .transfer(voter2.address, ethers.utils.parseEther("500"));
+
+      // ASSERT
+      await expect(promise).to.be.reverted;
+    });
+    it("Should store balance history", async () => {
+      // ARRANGE
+      const [deployer, voter1, voter2] = await ethers.getSigners();
+      const { token } = await loadFixture(deployFixture);
+      const sourceOriginalBalance = Number(
+        ethers.utils.formatEther(await token.balanceOf(voter1.address))
+      );
+      const targetOriginalBalance = Number(
+        ethers.utils.formatEther(await token.balanceOf(voter2.address))
+      );
+
+      // ACT
+      const promise = token
+        .connect(voter1)
+        .transfer(voter2.address, ethers.utils.parseEther("10"));
+
+      // ASSERT
+      const [originalBlock, originalBalance] = await token.checkpoints(
+        voter2.address,
+        0
+      );
+      const [finalBlock, finalBalance] = await token.checkpoints(
+        voter2.address,
+        1
+      );
+      expect(Number(ethers.utils.formatEther(originalBalance))).to.equal(200);
+      expect(Number(ethers.utils.formatEther(finalBalance))).to.equal(210);
+    });
   });
 });
