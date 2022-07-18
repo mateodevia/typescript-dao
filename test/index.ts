@@ -149,31 +149,19 @@ describe("Token Contract", () => {
       // ARRANGE
       const [deployer, voter1, voter2] = await ethers.getSigners();
       const { token } = await loadFixture(deployFixture);
-      const sourceOriginalBalance = Number(
-        ethers.utils.formatEther(await token.balanceOf(voter1.address))
-      );
-      const targetOriginalBalance = Number(
-        ethers.utils.formatEther(await token.balanceOf(voter2.address))
-      );
 
       // ACT
-      const promise = token
+      const transaction = token
         .connect(voter1)
         .transfer(voter2.address, ethers.utils.parseEther("500"));
 
       // ASSERT
-      await expect(promise).to.be.reverted;
+      await expect(transaction).to.be.reverted;
     });
     it("Should store balance history", async () => {
       // ARRANGE
       const [deployer, voter1, voter2] = await ethers.getSigners();
       const { token } = await loadFixture(deployFixture);
-      const sourceOriginalBalance = Number(
-        ethers.utils.formatEther(await token.balanceOf(voter1.address))
-      );
-      const targetOriginalBalance = Number(
-        ethers.utils.formatEther(await token.balanceOf(voter2.address))
-      );
 
       // ACT
       const promise = token
@@ -191,6 +179,93 @@ describe("Token Contract", () => {
       );
       expect(Number(ethers.utils.formatEther(originalBalance))).to.equal(200);
       expect(Number(ethers.utils.formatEther(finalBalance))).to.equal(210);
+    });
+  });
+});
+
+describe("TimeLock Contract", () => {
+  const tokenSupply = 1000;
+  const treasurySupply = 50;
+  const minDelay = 1;
+  const quorum = 5;
+  const votingDelay = 1;
+  const votingPeriod = 10;
+  const deployFixture = async () => {
+    const [deployer, voter1, voter2, voter3, voter4, voter5] =
+      await ethers.getSigners();
+    return await deploy(
+      tokenSupply,
+      treasurySupply,
+      { deployer, investors: [voter1, voter2, voter3, voter4, voter5] },
+      {
+        minDelay,
+        quorum,
+        votingDelay,
+        votingPeriod,
+      }
+    );
+  };
+
+  describe("When trying to grant a role to an addres", () => {
+    it("Should not allow to grant proposer role", async () => {
+      // ARRANGE
+      const [deployer, voter1] = await ethers.getSigners();
+      const { timeLock } = await loadFixture(deployFixture);
+      const proposerRole = await timeLock.PROPOSER_ROLE();
+
+      // ACT
+      const transaction = timeLock.grantRole(proposerRole, voter1.address);
+
+      // ASSERT
+      expect(transaction).to.be.reverted;
+    });
+    it("Should not allow to grant executor role", async () => {
+      // ARRANGE
+      const [deployer, voter1] = await ethers.getSigners();
+      const { timeLock } = await loadFixture(deployFixture);
+      const excecutorRole = await timeLock.EXECUTOR_ROLE();
+
+      // ACT
+      const transaction = timeLock.grantRole(excecutorRole, voter1.address);
+
+      // ASSERT
+      expect(transaction).to.be.reverted;
+    });
+    it("Should not allow to grant admin role", async () => {
+      // ARRANGE
+      const [deployer, voter1] = await ethers.getSigners();
+      const { timeLock } = await loadFixture(deployFixture);
+      const adminRole = await timeLock.TIMELOCK_ADMIN_ROLE();
+
+      // ACT
+      const transaction = timeLock.grantRole(adminRole, voter1.address);
+
+      // ASSERT
+      expect(transaction).to.be.reverted;
+    });
+    it("Should not allow to grant admin role", async () => {
+      // ARRANGE
+      const [deployer, voter1] = await ethers.getSigners();
+      const { timeLock } = await loadFixture(deployFixture);
+      const cancellerRole = await timeLock.CANCELLER_ROLE();
+
+      // ACT
+      const transaction = timeLock.grantRole(cancellerRole, voter1.address);
+
+      // ASSERT
+      expect(transaction).to.be.reverted;
+    });
+    it("Should not allow to grant default admin role", async () => {
+      // ARRANGE
+      const [deployer, voter1] = await ethers.getSigners();
+      const { timeLock } = await loadFixture(deployFixture);
+      const defaultRole = await timeLock.DEFAULT_ADMIN_ROLE();
+
+      // ACT
+      const transaction = timeLock.grantRole(defaultRole, voter1.address);
+
+      // ASSERT
+      expect(transaction).to.be.reverted;
     });
   });
 });
