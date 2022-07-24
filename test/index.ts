@@ -2,6 +2,18 @@ import { ethers } from "hardhat";
 import { expect } from "chai";
 import { deploy } from "../scripts/api/deployment";
 import { loadFixture } from "ethereum-waffle";
+import {
+  excecuteProposal,
+  proposeReleaseFundsToPayee,
+  queueProposal,
+  voteForProposal,
+} from "../scripts/api/proposal";
+import { ProposalStates, VotingOptions } from "../utils/types";
+import moveTime from "../utils/moveTime";
+import moveBlocks from "../utils/moveBlocks";
+import Chance from "chance";
+
+const chance = new Chance();
 
 describe("When deploying the smart contracts", function () {
   const tokenSupply = 1000;
@@ -15,12 +27,6 @@ describe("When deploying the smart contracts", function () {
     // ARRANGE
     const [deployer, voter1, voter2, voter3, voter4, voter5] =
       await ethers.getSigners();
-    console.log(
-      "Deployer balance",
-      ethers.utils.formatEther(
-        await ethers.provider.getBalance(deployer.address)
-      )
-    );
 
     // ACT
     const { token, timeLock, governor, treasury } = await deploy(
@@ -266,6 +272,605 @@ describe("TimeLock Contract", () => {
 
       // ASSERT
       expect(transaction).to.be.reverted;
+    });
+  });
+});
+
+describe("Governor Contract", () => {
+  const tokenSupply = 1000;
+  const treasurySupply = 50;
+  const minDelay = 20;
+  const quorum = 5;
+  const votingDelay = 5;
+  const votingPeriod = 10;
+
+  const deployFixture = async () => {
+    const [deployer, voter1, voter2, voter3, voter4, voter5] =
+      await ethers.getSigners();
+    return await deploy(
+      tokenSupply,
+      treasurySupply,
+      { deployer, investors: [voter1, voter2, voter3, voter4, voter5] },
+      {
+        minDelay,
+        quorum,
+        votingDelay,
+        votingPeriod,
+      }
+    );
+  };
+
+  describe("When making a proposal", () => {
+    it("Should allow anyone to create a proposal", async () => {
+      // ARRANGE
+      const [
+        deployer,
+        voter1,
+        voter2,
+        voter3,
+        voter4,
+        voter5,
+        payee,
+        otherAddress,
+      ] = await ethers.getSigners();
+      const { treasury, governor } = await loadFixture(deployFixture);
+
+      // ACT
+      const [res1, res2, res3] = await Promise.all([
+        proposeReleaseFundsToPayee(deployer, payee, 10, chance.string(), {
+          treasury,
+          governor,
+        }),
+        proposeReleaseFundsToPayee(voter1, payee, 10, chance.string(), {
+          treasury,
+          governor,
+        }),
+        proposeReleaseFundsToPayee(otherAddress, payee, 10, chance.string(), {
+          treasury,
+          governor,
+        }),
+      ]);
+
+      // ASSERT
+      expect(res1.proposalId).to.not.be.undefined;
+      expect(res2.proposalId).to.not.be.undefined;
+      expect(res3.proposalId).to.not.be.undefined;
+    });
+    it("Should wait for the votingDelay to be over before the proposal becomes active", async () => {
+      // ARRANGE
+      const [deployer, voter1, voter2] = await ethers.getSigners();
+      const { treasury, governor } = await loadFixture(deployFixture);
+
+      // ACT
+      const { proposalId } = await proposeReleaseFundsToPayee(
+        voter1,
+        voter2,
+        50,
+        chance.string(),
+        {
+          treasury,
+          governor,
+        }
+      );
+
+      // ASSERT
+      const proposalInitialState = await governor.state(proposalId);
+      expect(proposalInitialState).to.equal(ProposalStates.Pending);
+
+      await moveBlocks(votingDelay + 1);
+
+      const proposalFinalState = await governor.state(proposalId);
+      expect(proposalFinalState).to.equal(ProposalStates.Active);
+    });
+    it("Should wait for the votingPeriod to be over before the proposal becomes defeated (if nobody voted for it)", async () => {
+      // ARRANGE
+      const [deployer, voter1, voter2] = await ethers.getSigners();
+      const { treasury, governor } = await loadFixture(deployFixture);
+
+      // ACT
+      const { proposalId } = await proposeReleaseFundsToPayee(
+        voter1,
+        voter2,
+        50,
+        chance.string(),
+        {
+          treasury,
+          governor,
+        }
+      );
+      await moveBlocks(votingDelay + votingPeriod + 1);
+
+      // ASSERT
+      const proposalFinalState = await governor.state(proposalId);
+      expect(proposalFinalState).to.equal(ProposalStates.Defeated);
+    });
+  });
+
+  describe("When voting for a proposal", () => {
+    it("Should not allow voting before the voting period", async () => {
+      // ARRANGE
+      const [deployer, voter1, voter2] = await ethers.getSigners();
+      const { treasury, governor } = await loadFixture(deployFixture);
+      const { proposalId } = await proposeReleaseFundsToPayee(
+        voter1,
+        voter2,
+        50,
+        chance.string(),
+        {
+          treasury,
+          governor,
+        }
+      );
+
+      // ACT
+      const transaction = voteForProposal(voter1, proposalId, 1, {
+        governor,
+      });
+
+      // ASSERT
+      await expect(transaction).to.be.reverted;
+    });
+    it("Should not allow voting after the voting period", async () => {
+      // ARRANGE
+      const [deployer, voter1, voter2] = await ethers.getSigners();
+      const { treasury, governor } = await loadFixture(deployFixture);
+      const { proposalId } = await proposeReleaseFundsToPayee(
+        voter1,
+        voter2,
+        50,
+        chance.string(),
+        {
+          treasury,
+          governor,
+        }
+      );
+      await moveBlocks(votingDelay + votingPeriod + 1);
+
+      // ACT
+      const transaction = voteForProposal(voter1, proposalId, 1, {
+        governor,
+      });
+
+      // ASSERT
+      await expect(transaction).to.be.reverted;
+    });
+    describe("When all voters have the same amount of tokens (voting power)", () => {
+      it("When the mayority of votes are in favor of the proposal, the proposal should be successful", async () => {
+        // ARRANGE
+        const [deployer, voter1, voter2, voter3, voter4, voter5] =
+          await ethers.getSigners();
+        const { treasury, governor } = await loadFixture(deployFixture);
+        const { proposalId } = await proposeReleaseFundsToPayee(
+          voter1,
+          voter2,
+          50,
+          chance.string(),
+          {
+            treasury,
+            governor,
+          }
+        );
+        await moveBlocks(votingDelay);
+
+        // ACT
+        await voteForProposal(voter1, proposalId, VotingOptions.InFavor, {
+          governor,
+        });
+        await voteForProposal(voter2, proposalId, VotingOptions.InFavor, {
+          governor,
+        });
+        await voteForProposal(voter3, proposalId, VotingOptions.InFavor, {
+          governor,
+        });
+        await voteForProposal(voter4, proposalId, VotingOptions.InFavor, {
+          governor,
+        });
+        await voteForProposal(voter5, proposalId, VotingOptions.Against, {
+          governor,
+        });
+        await moveBlocks(votingPeriod);
+
+        // ASSERT
+        const proposalFinalState = await governor.state(proposalId);
+        expect(proposalFinalState).to.equal(ProposalStates.Succeeded);
+      });
+      it("When the mayority of votes are againts of the proposal, the proposal should be defeated", async () => {
+        // ARRANGE
+        const [deployer, voter1, voter2, voter3, voter4, voter5] =
+          await ethers.getSigners();
+        const { treasury, governor } = await loadFixture(deployFixture);
+        const { proposalId } = await proposeReleaseFundsToPayee(
+          voter1,
+          voter2,
+          50,
+          chance.string(),
+          {
+            treasury,
+            governor,
+          }
+        );
+        await moveBlocks(votingDelay);
+
+        // ACT
+        await voteForProposal(voter1, proposalId, VotingOptions.Against, {
+          governor,
+        });
+        await voteForProposal(voter2, proposalId, VotingOptions.Against, {
+          governor,
+        });
+        await voteForProposal(voter3, proposalId, VotingOptions.Against, {
+          governor,
+        });
+        await voteForProposal(voter4, proposalId, VotingOptions.Against, {
+          governor,
+        });
+        await voteForProposal(voter5, proposalId, VotingOptions.InFavor, {
+          governor,
+        });
+        await moveBlocks(votingPeriod);
+
+        // ASSERT
+        const proposalFinalState = await governor.state(proposalId);
+        expect(proposalFinalState).to.equal(ProposalStates.Defeated);
+      });
+      it("When the mayority of votes abstained, the proposal should be Defeated", async () => {
+        // ARRANGE
+        const [deployer, voter1, voter2, voter3, voter4, voter5] =
+          await ethers.getSigners();
+        const { treasury, governor } = await loadFixture(deployFixture);
+        const { proposalId } = await proposeReleaseFundsToPayee(
+          voter1,
+          voter2,
+          50,
+          chance.string(),
+          {
+            treasury,
+            governor,
+          }
+        );
+        await moveBlocks(votingDelay);
+
+        // ACT
+        await voteForProposal(voter1, proposalId, VotingOptions.Abstain, {
+          governor,
+        });
+        await voteForProposal(voter2, proposalId, VotingOptions.Abstain, {
+          governor,
+        });
+        await voteForProposal(voter3, proposalId, VotingOptions.Abstain, {
+          governor,
+        });
+        await voteForProposal(voter4, proposalId, VotingOptions.Abstain, {
+          governor,
+        });
+        await voteForProposal(voter5, proposalId, VotingOptions.Abstain, {
+          governor,
+        });
+        await moveBlocks(votingPeriod);
+
+        // ASSERT
+        const proposalFinalState = await governor.state(proposalId);
+        expect(proposalFinalState).to.equal(ProposalStates.Defeated);
+      });
+    });
+    it("When someone has more tokens than the others, his/her vote should have more weight", async () => {
+      // ARRANGE
+      const [deployer, voter1, voter2, voter3, voter4, voter5] =
+        await ethers.getSigners();
+      const { treasury, governor, token } = await loadFixture(deployFixture);
+
+      // Voter 1 sends 150 tokens to Voter 5 being left with only 50 tokens
+      await token
+        .connect(voter1)
+        .approve(token.address, ethers.utils.parseEther("150"));
+      await token
+        .connect(voter1)
+        .transfer(voter5.address, ethers.utils.parseEther("150"));
+
+      // Voter 2 sends 150 tokens to Voter 5 being left with only 50 tokens
+      await token
+        .connect(voter2)
+        .approve(token.address, ethers.utils.parseEther("150"));
+      await token
+        .connect(voter2)
+        .transfer(voter5.address, ethers.utils.parseEther("150"));
+
+      const { proposalId } = await proposeReleaseFundsToPayee(
+        voter1,
+        voter2,
+        50,
+        chance.string(),
+        {
+          treasury,
+          governor,
+        }
+      );
+      await moveBlocks(votingDelay);
+
+      // ACT
+      await voteForProposal(voter1, proposalId, VotingOptions.InFavor, {
+        governor,
+      });
+      await voteForProposal(voter2, proposalId, VotingOptions.InFavor, {
+        governor,
+      });
+      await voteForProposal(voter5, proposalId, VotingOptions.Against, {
+        governor,
+      });
+      await moveBlocks(votingPeriod);
+
+      // ASSERT
+      // Token distribution should be in favor of voter 5
+      const tokenBalanceVoter1 = Number(
+        ethers.utils.formatEther(await token.balanceOf(voter1.address))
+      );
+      const tokenBalanceVoter2 = Number(
+        ethers.utils.formatEther(await token.balanceOf(voter2.address))
+      );
+      const tokenBalanceVoter5 = Number(
+        ethers.utils.formatEther(await token.balanceOf(voter5.address))
+      );
+      expect(tokenBalanceVoter1).to.equal(50);
+      expect(tokenBalanceVoter2).to.equal(50);
+      expect(tokenBalanceVoter5).to.equal(500);
+
+      // Voting results should be weighted according to token distribution
+      const { againstVotes, forVotes } = await governor.proposalVotes(
+        proposalId
+      );
+      expect(Number(ethers.utils.formatEther(againstVotes))).to.equal(500);
+      expect(Number(ethers.utils.formatEther(forVotes))).to.equal(100);
+
+      // Proposal should not pass because voter5 (voter with more voting power) voted against it
+      const proposalFinalState = await governor.state(proposalId);
+      expect(proposalFinalState).to.equal(ProposalStates.Defeated);
+    });
+    it("When there is not enough quorum, the proposal should be defeated", async () => {
+      // ARRANGE
+      const [deployer, voter1, voter2, voter3, voter4, voter5] =
+        await ethers.getSigners();
+      const { treasury, governor, token } = await loadFixture(deployFixture);
+
+      // Voter 1 sends 190 tokens to Voter 5 being left with only 10 tokens
+      await token
+        .connect(voter1)
+        .approve(token.address, ethers.utils.parseEther("190"));
+      await token
+        .connect(voter1)
+        .transfer(voter5.address, ethers.utils.parseEther("190"));
+      const { proposalId } = await proposeReleaseFundsToPayee(
+        voter1,
+        voter2,
+        50,
+        chance.string(),
+        {
+          treasury,
+          governor,
+        }
+      );
+      await moveBlocks(votingDelay);
+
+      // ACT
+      await voteForProposal(voter1, proposalId, VotingOptions.InFavor, {
+        governor,
+      });
+      await moveBlocks(votingPeriod);
+
+      // ASSERT
+      // Voter 1 should only have 10 tokens (less than 5% of the total supply)
+      const tokenBalanceVoter1 = Number(
+        ethers.utils.formatEther(await token.balanceOf(voter1.address))
+      );
+      expect(tokenBalanceVoter1).to.equal(10);
+
+      // Voting results should be weighted according to token distribution
+      const { forVotes } = await governor.proposalVotes(proposalId);
+      expect(Number(ethers.utils.formatEther(forVotes))).to.equal(10);
+
+      // Proposal should not pass because 10 votes is less than the minimum quorum needed (5% -> 50 votes)
+      const proposalFinalState = await governor.state(proposalId);
+      expect(proposalFinalState).to.equal(ProposalStates.Defeated);
+    });
+  });
+  describe("When a proposal is successful", () => {
+    it("Should allow anyone to queue the proposal", async () => {
+      // ARRANGE
+      const [deployer, voter1, voter2, voter3, voter4, voter5, otherAddress] =
+        await ethers.getSigners();
+      const { treasury, governor } = await loadFixture(deployFixture);
+
+      // Create 3 different proposals
+      const description1 = chance.string();
+      const description2 = chance.string();
+      const description3 = chance.string();
+      const [proposal1, proposal2, proposal3] = await Promise.all([
+        proposeReleaseFundsToPayee(voter1, otherAddress, 10, description1, {
+          treasury,
+          governor,
+        }),
+        proposeReleaseFundsToPayee(voter1, otherAddress, 10, description2, {
+          treasury,
+          governor,
+        }),
+        proposeReleaseFundsToPayee(voter1, otherAddress, 10, description3, {
+          treasury,
+          governor,
+        }),
+      ]);
+      // Make the 3 prposals successful
+      await moveBlocks(votingDelay);
+      await Promise.all([
+        voteForProposal(voter1, proposal1.proposalId, VotingOptions.InFavor, {
+          governor,
+        }),
+        voteForProposal(voter1, proposal2.proposalId, VotingOptions.InFavor, {
+          governor,
+        }),
+        voteForProposal(voter1, proposal3.proposalId, VotingOptions.InFavor, {
+          governor,
+        }),
+      ]);
+      await moveBlocks(votingPeriod);
+
+      // ACT
+      await Promise.all([
+        // Should allow deployer to enqueue a proposal
+        queueProposal(
+          description1,
+          proposal1.encodedFunction,
+          {
+            governor,
+            treasury,
+          },
+          deployer
+        ),
+        // Should allow voter to enqueue a proposal
+        queueProposal(
+          description2,
+          proposal2.encodedFunction,
+          {
+            governor,
+            treasury,
+          },
+          voter1
+        ),
+        // Should allow an address without tokens to enqueue a proposal
+        queueProposal(
+          description3,
+          proposal3.encodedFunction,
+          {
+            governor,
+            treasury,
+          },
+          otherAddress
+        ),
+      ]);
+
+      // ASSERT
+      const prposal1State = await governor.state(proposal1.proposalId);
+      expect(prposal1State).to.equal(ProposalStates.Queued);
+
+      const prposal2State = await governor.state(proposal1.proposalId);
+      expect(prposal2State).to.equal(ProposalStates.Queued);
+
+      const prposal3State = await governor.state(proposal1.proposalId);
+      expect(prposal3State).to.equal(ProposalStates.Queued);
+    });
+    it("Should allow anyone to execute the proposal", async () => {
+      // ARRANGE
+      const [deployer, voter1, voter2, voter3, voter4, voter5, otherAddress] =
+        await ethers.getSigners();
+      const { treasury, governor } = await loadFixture(deployFixture);
+
+      // Create 3 different proposals
+      const description1 = chance.string();
+      const description2 = chance.string();
+      const description3 = chance.string();
+      const [proposal1, proposal2, proposal3] = await Promise.all([
+        proposeReleaseFundsToPayee(voter1, otherAddress, 10, description1, {
+          treasury,
+          governor,
+        }),
+        proposeReleaseFundsToPayee(voter1, otherAddress, 10, description2, {
+          treasury,
+          governor,
+        }),
+        proposeReleaseFundsToPayee(voter1, otherAddress, 10, description3, {
+          treasury,
+          governor,
+        }),
+      ]);
+      // Make the 3 prposals successful
+      await moveBlocks(votingDelay);
+      await Promise.all([
+        voteForProposal(voter1, proposal1.proposalId, VotingOptions.InFavor, {
+          governor,
+        }),
+        voteForProposal(voter1, proposal2.proposalId, VotingOptions.InFavor, {
+          governor,
+        }),
+        voteForProposal(voter1, proposal3.proposalId, VotingOptions.InFavor, {
+          governor,
+        }),
+      ]);
+      await moveBlocks(votingPeriod);
+
+      // Enqueue the proposals
+      await Promise.all([
+        // Should allow deployer to enqueue a proposal
+        queueProposal(
+          description1,
+          proposal1.encodedFunction,
+          {
+            governor,
+            treasury,
+          },
+          deployer
+        ),
+        // Should allow voter to enqueue a proposal
+        queueProposal(
+          description2,
+          proposal2.encodedFunction,
+          {
+            governor,
+            treasury,
+          },
+          voter1
+        ),
+        // Should allow an address without tokens to enqueue a proposal
+        queueProposal(
+          description3,
+          proposal3.encodedFunction,
+          {
+            governor,
+            treasury,
+          },
+          otherAddress
+        ),
+      ]);
+      await moveTime(minDelay + 1);
+      await moveBlocks(1);
+
+      // ACT
+      await Promise.all([
+        excecuteProposal(
+          description1,
+          proposal1.encodedFunction,
+          {
+            governor,
+            treasury,
+          },
+          deployer
+        ),
+        excecuteProposal(
+          description2,
+          proposal2.encodedFunction,
+          {
+            governor,
+            treasury,
+          },
+          voter1
+        ),
+        excecuteProposal(
+          description3,
+          proposal3.encodedFunction,
+          {
+            governor,
+            treasury,
+          },
+          otherAddress
+        ),
+      ]);
+
+      // ASSERT
+      const prposal1State = await governor.state(proposal1.proposalId);
+      expect(prposal1State).to.equal(ProposalStates.Executed);
+
+      const prposal2State = await governor.state(proposal1.proposalId);
+      expect(prposal2State).to.equal(ProposalStates.Executed);
+
+      const prposal3State = await governor.state(proposal1.proposalId);
+      expect(prposal3State).to.equal(ProposalStates.Executed);
     });
   });
 });

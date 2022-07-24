@@ -30,6 +30,7 @@ async function main() {
   // Create a proposal
   const proposalDescription = "Description";
   const { proposalId, encodedFunction } = await proposeReleaseFundsToPayee(
+    deployer,
     payee,
     50,
     proposalDescription,

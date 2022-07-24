@@ -30,20 +30,30 @@ async function main() {
     addresses.Proposal;
 
   // Queue the approved proposal
-  await queueProposal(proposalDescription, encodedFunction, {
-    governor,
-    treasury,
-  });
+  await queueProposal(
+    proposalDescription,
+    encodedFunction,
+    {
+      governor,
+      treasury,
+    },
+    deployer
+  );
   await moveTime(constants.minDelay + 1);
   await moveBlocks(1);
   console.log("Queued the proposal");
   console.log(`Current Proposal State: ${await governor.state(proposalId)}`);
 
   // Excecuting the proposal
-  await excecuteProposal(proposalDescription, encodedFunction, {
-    governor,
-    treasury,
-  });
+  await excecuteProposal(
+    proposalDescription,
+    encodedFunction,
+    {
+      governor,
+      treasury,
+    },
+    deployer
+  );
   console.log("Executed the proposal");
   console.log(`Current Proposal State: ${await governor.state(proposalId)}`);
 
