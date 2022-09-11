@@ -13,8 +13,7 @@ import { MyGovernor, Treasury } from "../../typechain";
  * @returns The proposalId, and the encodedFunction of the created proposal
  */
 export const proposeReleaseFundsToPayee = async (
-  proposer: SignerWithAddress,
-  payee: SignerWithAddress,
+  payee: string,
   amount: number,
   proposalDescription: string,
   contracts: {
@@ -25,18 +24,16 @@ export const proposeReleaseFundsToPayee = async (
   // Encode the function and argments to propose
   const encodedFunction = contracts.treasury.interface.encodeFunctionData(
     "releaseFunds",
-    [payee.address, ethers.utils.parseEther(amount.toString())]
+    [payee, ethers.utils.parseEther(amount.toString())]
   );
 
   // Make the proposal
-  const proposeTx = await contracts.governor
-    .connect(proposer)
-    .propose(
-      [contracts.treasury.address],
-      [0],
-      [encodedFunction],
-      proposalDescription
-    );
+  const proposeTx = await contracts.governor.propose(
+    [contracts.treasury.address],
+    [0],
+    [encodedFunction],
+    proposalDescription
+  );
 
   // Retrieve proposal id
   const proposeReceipt = await proposeTx.wait(1);
@@ -55,7 +52,6 @@ export const proposeReleaseFundsToPayee = async (
  * @param contracts.governor The governor contract
  */
 export const voteForProposal = async (
-  voter: SignerWithAddress,
   proposalId: string,
   vote: number,
   contracts: {
@@ -63,9 +59,7 @@ export const voteForProposal = async (
   }
 ): Promise<void> => {
   // Voting
-  const vote1 = await contracts.governor
-    .connect(voter)
-    .castVote(proposalId, vote);
+  const vote1 = await contracts.governor.castVote(proposalId, vote);
   await vote1.wait(1);
 };
 
@@ -83,18 +77,15 @@ export const queueProposal = async (
   contracts: {
     governor: MyGovernor;
     treasury: Treasury;
-  },
-  sender: SignerWithAddress
+  }
 ): Promise<void> => {
   // Queue the approved proposal
-  const queueTx = await contracts.governor
-    .connect(sender)
-    .queue(
-      [contracts.treasury.address],
-      [0],
-      [encodedFunction],
-      ethers.utils.id(proposalDescription)
-    );
+  const queueTx = await contracts.governor.queue(
+    [contracts.treasury.address],
+    [0],
+    [encodedFunction],
+    ethers.utils.id(proposalDescription)
+  );
   await queueTx.wait(1);
 };
 
@@ -112,17 +103,14 @@ export const excecuteProposal = async (
   contracts: {
     governor: MyGovernor;
     treasury: Treasury;
-  },
-  sender: SignerWithAddress
+  }
 ): Promise<void> => {
   // Excecuting the proposal
-  const excecuteTx = await contracts.governor
-    .connect(sender)
-    .execute(
-      [contracts.treasury.address],
-      [0],
-      [encodedFunction],
-      ethers.utils.id(proposalDescription)
-    );
+  const excecuteTx = await contracts.governor.execute(
+    [contracts.treasury.address],
+    [0],
+    [encodedFunction],
+    ethers.utils.id(proposalDescription)
+  );
   await excecuteTx.wait(1);
 };

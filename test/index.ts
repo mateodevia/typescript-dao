@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { ethers } from "hardhat";
 import { expect } from "chai";
 import { deploy } from "../scripts/api/deployment";
@@ -317,17 +318,17 @@ describe("Governor Contract", () => {
 
       // ACT
       const [res1, res2, res3] = await Promise.all([
-        proposeReleaseFundsToPayee(deployer, payee, 10, chance.string(), {
-          treasury,
-          governor,
+        proposeReleaseFundsToPayee(payee.address, 10, chance.string(), {
+          treasury: treasury.connect(deployer),
+          governor: governor.connect(deployer),
         }),
-        proposeReleaseFundsToPayee(voter1, payee, 10, chance.string(), {
-          treasury,
-          governor,
+        proposeReleaseFundsToPayee(payee.address, 10, chance.string(), {
+          treasury: treasury.connect(voter1),
+          governor: governor.connect(voter1),
         }),
-        proposeReleaseFundsToPayee(otherAddress, payee, 10, chance.string(), {
-          treasury,
-          governor,
+        proposeReleaseFundsToPayee(payee.address, 10, chance.string(), {
+          treasury: treasury.connect(otherAddress),
+          governor: governor.connect(otherAddress),
         }),
       ]);
 
@@ -343,13 +344,12 @@ describe("Governor Contract", () => {
 
       // ACT
       const { proposalId } = await proposeReleaseFundsToPayee(
-        voter1,
-        voter2,
+        voter2.address,
         50,
         chance.string(),
         {
-          treasury,
-          governor,
+          treasury: treasury.connect(voter1),
+          governor: governor.connect(voter1),
         }
       );
 
@@ -369,13 +369,12 @@ describe("Governor Contract", () => {
 
       // ACT
       const { proposalId } = await proposeReleaseFundsToPayee(
-        voter1,
-        voter2,
+        voter2.address,
         50,
         chance.string(),
         {
-          treasury,
-          governor,
+          treasury: treasury.connect(voter1),
+          governor: governor.connect(voter1),
         }
       );
       await moveBlocks(votingDelay + votingPeriod + 1);
@@ -392,19 +391,18 @@ describe("Governor Contract", () => {
       const [deployer, voter1, voter2] = await ethers.getSigners();
       const { treasury, governor } = await loadFixture(deployFixture);
       const { proposalId } = await proposeReleaseFundsToPayee(
-        voter1,
-        voter2,
+        voter2.address,
         50,
         chance.string(),
         {
-          treasury,
-          governor,
+          treasury: treasury.connect(voter1),
+          governor: governor.connect(voter1),
         }
       );
 
       // ACT
-      const transaction = voteForProposal(voter1, proposalId, 1, {
-        governor,
+      const transaction = voteForProposal(proposalId, 1, {
+        governor: governor.connect(voter1),
       });
 
       // ASSERT
@@ -415,20 +413,19 @@ describe("Governor Contract", () => {
       const [deployer, voter1, voter2] = await ethers.getSigners();
       const { treasury, governor } = await loadFixture(deployFixture);
       const { proposalId } = await proposeReleaseFundsToPayee(
-        voter1,
-        voter2,
+        voter2.address,
         50,
         chance.string(),
         {
-          treasury,
-          governor,
+          treasury: treasury.connect(voter1),
+          governor: governor.connect(voter1),
         }
       );
       await moveBlocks(votingDelay + votingPeriod + 1);
 
       // ACT
-      const transaction = voteForProposal(voter1, proposalId, 1, {
-        governor,
+      const transaction = voteForProposal(proposalId, 1, {
+        governor: governor.connect(voter1),
       });
 
       // ASSERT
@@ -441,32 +438,31 @@ describe("Governor Contract", () => {
           await ethers.getSigners();
         const { treasury, governor } = await loadFixture(deployFixture);
         const { proposalId } = await proposeReleaseFundsToPayee(
-          voter1,
-          voter2,
+          voter2.address,
           50,
           chance.string(),
           {
-            treasury,
-            governor,
+            treasury: treasury.connect(voter1),
+            governor: governor.connect(voter1),
           }
         );
         await moveBlocks(votingDelay);
 
         // ACT
-        await voteForProposal(voter1, proposalId, VotingOptions.InFavor, {
-          governor,
+        await voteForProposal(proposalId, VotingOptions.InFavor, {
+          governor: governor.connect(voter1),
         });
-        await voteForProposal(voter2, proposalId, VotingOptions.InFavor, {
-          governor,
+        await voteForProposal(proposalId, VotingOptions.InFavor, {
+          governor: governor.connect(voter2),
         });
-        await voteForProposal(voter3, proposalId, VotingOptions.InFavor, {
-          governor,
+        await voteForProposal(proposalId, VotingOptions.InFavor, {
+          governor: governor.connect(voter3),
         });
-        await voteForProposal(voter4, proposalId, VotingOptions.InFavor, {
-          governor,
+        await voteForProposal(proposalId, VotingOptions.InFavor, {
+          governor: governor.connect(voter4),
         });
-        await voteForProposal(voter5, proposalId, VotingOptions.Against, {
-          governor,
+        await voteForProposal(proposalId, VotingOptions.Against, {
+          governor: governor.connect(voter5),
         });
         await moveBlocks(votingPeriod);
 
@@ -480,32 +476,31 @@ describe("Governor Contract", () => {
           await ethers.getSigners();
         const { treasury, governor } = await loadFixture(deployFixture);
         const { proposalId } = await proposeReleaseFundsToPayee(
-          voter1,
-          voter2,
+          voter2.address,
           50,
           chance.string(),
           {
-            treasury,
-            governor,
+            treasury: treasury.connect(voter1),
+            governor: governor.connect(voter1),
           }
         );
         await moveBlocks(votingDelay);
 
         // ACT
-        await voteForProposal(voter1, proposalId, VotingOptions.Against, {
-          governor,
+        await voteForProposal(proposalId, VotingOptions.Against, {
+          governor: governor.connect(voter1),
         });
-        await voteForProposal(voter2, proposalId, VotingOptions.Against, {
-          governor,
+        await voteForProposal(proposalId, VotingOptions.Against, {
+          governor: governor.connect(voter2),
         });
-        await voteForProposal(voter3, proposalId, VotingOptions.Against, {
-          governor,
+        await voteForProposal(proposalId, VotingOptions.Against, {
+          governor: governor.connect(voter3),
         });
-        await voteForProposal(voter4, proposalId, VotingOptions.Against, {
-          governor,
+        await voteForProposal(proposalId, VotingOptions.Against, {
+          governor: governor.connect(voter4),
         });
-        await voteForProposal(voter5, proposalId, VotingOptions.InFavor, {
-          governor,
+        await voteForProposal(proposalId, VotingOptions.InFavor, {
+          governor: governor.connect(voter5),
         });
         await moveBlocks(votingPeriod);
 
@@ -519,32 +514,31 @@ describe("Governor Contract", () => {
           await ethers.getSigners();
         const { treasury, governor } = await loadFixture(deployFixture);
         const { proposalId } = await proposeReleaseFundsToPayee(
-          voter1,
-          voter2,
+          voter2.address,
           50,
           chance.string(),
           {
-            treasury,
-            governor,
+            treasury: treasury.connect(voter1),
+            governor: governor.connect(voter1),
           }
         );
         await moveBlocks(votingDelay);
 
         // ACT
-        await voteForProposal(voter1, proposalId, VotingOptions.Abstain, {
-          governor,
+        await voteForProposal(proposalId, VotingOptions.Abstain, {
+          governor: governor.connect(voter1),
         });
-        await voteForProposal(voter2, proposalId, VotingOptions.Abstain, {
-          governor,
+        await voteForProposal(proposalId, VotingOptions.Abstain, {
+          governor: governor.connect(voter2),
         });
-        await voteForProposal(voter3, proposalId, VotingOptions.Abstain, {
-          governor,
+        await voteForProposal(proposalId, VotingOptions.Abstain, {
+          governor: governor.connect(voter3),
         });
-        await voteForProposal(voter4, proposalId, VotingOptions.Abstain, {
-          governor,
+        await voteForProposal(proposalId, VotingOptions.Abstain, {
+          governor: governor.connect(voter4),
         });
-        await voteForProposal(voter5, proposalId, VotingOptions.Abstain, {
-          governor,
+        await voteForProposal(proposalId, VotingOptions.Abstain, {
+          governor: governor.connect(voter5),
         });
         await moveBlocks(votingPeriod);
 
@@ -576,26 +570,25 @@ describe("Governor Contract", () => {
         .transfer(voter5.address, ethers.utils.parseEther("150"));
 
       const { proposalId } = await proposeReleaseFundsToPayee(
-        voter1,
-        voter2,
+        voter2.address,
         50,
         chance.string(),
         {
-          treasury,
-          governor,
+          treasury: treasury.connect(voter1),
+          governor: governor.connect(voter1),
         }
       );
       await moveBlocks(votingDelay);
 
       // ACT
-      await voteForProposal(voter1, proposalId, VotingOptions.InFavor, {
-        governor,
+      await voteForProposal(proposalId, VotingOptions.InFavor, {
+        governor: governor.connect(voter1),
       });
-      await voteForProposal(voter2, proposalId, VotingOptions.InFavor, {
-        governor,
+      await voteForProposal(proposalId, VotingOptions.InFavor, {
+        governor: governor.connect(voter2),
       });
-      await voteForProposal(voter5, proposalId, VotingOptions.Against, {
-        governor,
+      await voteForProposal(proposalId, VotingOptions.Against, {
+        governor: governor.connect(voter3),
       });
       await moveBlocks(votingPeriod);
 
@@ -639,20 +632,19 @@ describe("Governor Contract", () => {
         .connect(voter1)
         .transfer(voter5.address, ethers.utils.parseEther("190"));
       const { proposalId } = await proposeReleaseFundsToPayee(
-        voter1,
-        voter2,
+        voter2.address,
         50,
         chance.string(),
         {
-          treasury,
-          governor,
+          treasury: treasury.connect(voter1),
+          governor: governor.connect(voter1),
         }
       );
       await moveBlocks(votingDelay);
 
       // ACT
-      await voteForProposal(voter1, proposalId, VotingOptions.InFavor, {
-        governor,
+      await voteForProposal(proposalId, VotingOptions.InFavor, {
+        governor: governor.connect(voter1),
       });
       await moveBlocks(votingPeriod);
 
@@ -684,30 +676,30 @@ describe("Governor Contract", () => {
       const description2 = chance.string();
       const description3 = chance.string();
       const [proposal1, proposal2, proposal3] = await Promise.all([
-        proposeReleaseFundsToPayee(voter1, otherAddress, 10, description1, {
-          treasury,
-          governor,
+        proposeReleaseFundsToPayee(otherAddress.address, 10, description1, {
+          treasury: treasury.connect(voter1),
+          governor: governor.connect(voter1),
         }),
-        proposeReleaseFundsToPayee(voter1, otherAddress, 10, description2, {
-          treasury,
-          governor,
+        proposeReleaseFundsToPayee(otherAddress.address, 10, description2, {
+          treasury: treasury.connect(voter1),
+          governor: governor.connect(voter1),
         }),
-        proposeReleaseFundsToPayee(voter1, otherAddress, 10, description3, {
-          treasury,
-          governor,
+        proposeReleaseFundsToPayee(otherAddress.address, 10, description3, {
+          treasury: treasury.connect(voter1),
+          governor: governor.connect(voter1),
         }),
       ]);
       // Make the 3 prposals successful
       await moveBlocks(votingDelay);
       await Promise.all([
-        voteForProposal(voter1, proposal1.proposalId, VotingOptions.InFavor, {
-          governor,
+        voteForProposal(proposal1.proposalId, VotingOptions.InFavor, {
+          governor: governor.connect(voter1),
         }),
-        voteForProposal(voter1, proposal2.proposalId, VotingOptions.InFavor, {
-          governor,
+        voteForProposal(proposal2.proposalId, VotingOptions.InFavor, {
+          governor: governor.connect(voter1),
         }),
-        voteForProposal(voter1, proposal3.proposalId, VotingOptions.InFavor, {
-          governor,
+        voteForProposal(proposal3.proposalId, VotingOptions.InFavor, {
+          governor: governor.connect(voter1),
         }),
       ]);
       await moveBlocks(votingPeriod);
@@ -715,35 +707,20 @@ describe("Governor Contract", () => {
       // ACT
       await Promise.all([
         // Should allow deployer to enqueue a proposal
-        queueProposal(
-          description1,
-          proposal1.encodedFunction,
-          {
-            governor,
-            treasury,
-          },
-          deployer
-        ),
+        queueProposal(description1, proposal1.encodedFunction, {
+          governor: governor.connect(deployer),
+          treasury: treasury.connect(deployer),
+        }),
         // Should allow voter to enqueue a proposal
-        queueProposal(
-          description2,
-          proposal2.encodedFunction,
-          {
-            governor,
-            treasury,
-          },
-          voter1
-        ),
+        queueProposal(description2, proposal2.encodedFunction, {
+          governor: governor.connect(voter1),
+          treasury: treasury.connect(voter1),
+        }),
         // Should allow an address without tokens to enqueue a proposal
-        queueProposal(
-          description3,
-          proposal3.encodedFunction,
-          {
-            governor,
-            treasury,
-          },
-          otherAddress
-        ),
+        queueProposal(description3, proposal3.encodedFunction, {
+          governor: governor.connect(otherAddress),
+          treasury: treasury.connect(otherAddress),
+        }),
       ]);
 
       // ASSERT
@@ -767,30 +744,30 @@ describe("Governor Contract", () => {
       const description2 = chance.string();
       const description3 = chance.string();
       const [proposal1, proposal2, proposal3] = await Promise.all([
-        proposeReleaseFundsToPayee(voter1, otherAddress, 10, description1, {
-          treasury,
-          governor,
+        proposeReleaseFundsToPayee(otherAddress.address, 10, description1, {
+          treasury: treasury.connect(voter1),
+          governor: governor.connect(voter1),
         }),
-        proposeReleaseFundsToPayee(voter1, otherAddress, 10, description2, {
-          treasury,
-          governor,
+        proposeReleaseFundsToPayee(otherAddress.address, 10, description2, {
+          treasury: treasury.connect(voter1),
+          governor: governor.connect(voter1),
         }),
-        proposeReleaseFundsToPayee(voter1, otherAddress, 10, description3, {
-          treasury,
-          governor,
+        proposeReleaseFundsToPayee(otherAddress.address, 10, description3, {
+          treasury: treasury.connect(voter1),
+          governor: governor.connect(voter1),
         }),
       ]);
       // Make the 3 prposals successful
       await moveBlocks(votingDelay);
       await Promise.all([
-        voteForProposal(voter1, proposal1.proposalId, VotingOptions.InFavor, {
-          governor,
+        voteForProposal(proposal1.proposalId, VotingOptions.InFavor, {
+          governor: governor.connect(voter1),
         }),
-        voteForProposal(voter1, proposal2.proposalId, VotingOptions.InFavor, {
-          governor,
+        voteForProposal(proposal2.proposalId, VotingOptions.InFavor, {
+          governor: governor.connect(voter1),
         }),
-        voteForProposal(voter1, proposal3.proposalId, VotingOptions.InFavor, {
-          governor,
+        voteForProposal(proposal3.proposalId, VotingOptions.InFavor, {
+          governor: governor.connect(voter1),
         }),
       ]);
       await moveBlocks(votingPeriod);
@@ -798,68 +775,38 @@ describe("Governor Contract", () => {
       // Enqueue the proposals
       await Promise.all([
         // Should allow deployer to enqueue a proposal
-        queueProposal(
-          description1,
-          proposal1.encodedFunction,
-          {
-            governor,
-            treasury,
-          },
-          deployer
-        ),
+        queueProposal(description1, proposal1.encodedFunction, {
+          governor: governor.connect(deployer),
+          treasury: treasury.connect(deployer),
+        }),
         // Should allow voter to enqueue a proposal
-        queueProposal(
-          description2,
-          proposal2.encodedFunction,
-          {
-            governor,
-            treasury,
-          },
-          voter1
-        ),
+        queueProposal(description2, proposal2.encodedFunction, {
+          governor: governor.connect(voter1),
+          treasury: treasury.connect(voter1),
+        }),
         // Should allow an address without tokens to enqueue a proposal
-        queueProposal(
-          description3,
-          proposal3.encodedFunction,
-          {
-            governor,
-            treasury,
-          },
-          otherAddress
-        ),
+        queueProposal(description3, proposal3.encodedFunction, {
+          governor: governor.connect(otherAddress),
+          treasury: treasury.connect(otherAddress),
+        }),
       ]);
       await moveTime(minDelay + 1);
       await moveBlocks(1);
 
       // ACT
       await Promise.all([
-        excecuteProposal(
-          description1,
-          proposal1.encodedFunction,
-          {
-            governor,
-            treasury,
-          },
-          deployer
-        ),
-        excecuteProposal(
-          description2,
-          proposal2.encodedFunction,
-          {
-            governor,
-            treasury,
-          },
-          voter1
-        ),
-        excecuteProposal(
-          description3,
-          proposal3.encodedFunction,
-          {
-            governor,
-            treasury,
-          },
-          otherAddress
-        ),
+        excecuteProposal(description1, proposal1.encodedFunction, {
+          governor: governor.connect(deployer),
+          treasury: treasury.connect(deployer),
+        }),
+        excecuteProposal(description2, proposal2.encodedFunction, {
+          governor: governor.connect(voter1),
+          treasury: treasury.connect(voter1),
+        }),
+        excecuteProposal(description3, proposal3.encodedFunction, {
+          governor: governor.connect(otherAddress),
+          treasury: treasury.connect(otherAddress),
+        }),
       ]);
 
       // ASSERT
