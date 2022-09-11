@@ -26,11 +26,11 @@ const config: HardhatUserConfig = {
   solidity: "0.8.8",
   networks: {
     hardhat: {
-      chainId: 31337,
+      chainId: 1337,
       allowUnlimitedContractSize: true,
     },
     localhost: {
-      chainId: 31337,
+      chainId: 1337,
       allowUnlimitedContractSize: true,
     },
     ropsten: {
