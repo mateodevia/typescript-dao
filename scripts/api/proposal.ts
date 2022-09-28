@@ -20,7 +20,7 @@ export const proposeReleaseFundsToPayee = async (
     treasury: Treasury;
     governor: MyGovernor;
   }
-): Promise<{ proposalId: string; encodedFunction: string }> => {
+): Promise<{ proposalId: BigNumber; encodedFunction: string }> => {
   // Encode the function and argments to propose
   const encodedFunction = contracts.treasury.interface.encodeFunctionData(
     "releaseFunds",
@@ -37,8 +37,6 @@ export const proposeReleaseFundsToPayee = async (
 
   // Retrieve proposal id
   const proposeReceipt = await proposeTx.wait(1);
-  console.log("proposeTx", proposeTx);
-  console.log("proposeReceipt", proposeReceipt);
   return {
     proposalId: proposeReceipt.events![0].args!.proposalId,
     encodedFunction,

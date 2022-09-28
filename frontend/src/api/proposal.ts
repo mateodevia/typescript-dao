@@ -36,8 +36,6 @@ export const proposeReleaseFundsToPayee = async (
 
   // Retrieve proposal id
   const proposeReceipt = await proposeTx.wait(1);
-  console.log("proposeTx", proposeTx);
-  console.log("proposeReceipt", proposeReceipt);
   return {
     proposalId: proposeReceipt.events![0]?.args!.proposalId,
     encodedFunction,
