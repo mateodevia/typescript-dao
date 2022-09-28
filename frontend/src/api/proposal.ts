@@ -1,6 +1,5 @@
-import { BigNumber } from "ethers";
-import { ethers } from "hardhat";
-import { MyGovernor, Treasury } from "../../typechain";
+import { BigNumber, ethers } from "ethers";
+import { MyGovernor, Treasury } from "../typechain";
 
 /**
  * Creates a proposal to send a certain amount of ETH to a given wallet
@@ -20,7 +19,7 @@ export const proposeReleaseFundsToPayee = async (
     treasury: Treasury;
     governor: MyGovernor;
   }
-): Promise<{ proposalId: string; encodedFunction: string }> => {
+): Promise<{ proposalId: BigNumber; encodedFunction: string }> => {
   // Encode the function and argments to propose
   const encodedFunction = contracts.treasury.interface.encodeFunctionData(
     "releaseFunds",
@@ -40,7 +39,7 @@ export const proposeReleaseFundsToPayee = async (
   console.log("proposeTx", proposeTx);
   console.log("proposeReceipt", proposeReceipt);
   return {
-    proposalId: proposeReceipt.events![0].args!.proposalId,
+    proposalId: proposeReceipt.events![0]?.args!.proposalId,
     encodedFunction,
   };
 };
@@ -62,7 +61,8 @@ export const voteForProposal = async (
 ): Promise<void> => {
   // Voting
   const vote1 = await contracts.governor.castVote(proposalId, vote);
-  await vote1.wait(1);
+  const a = await vote1.wait(1);
+  console.log(a);
 };
 
 /**

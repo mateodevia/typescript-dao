@@ -1,3 +1,4 @@
+// eslint-disable-next-line node/no-extraneous-import
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { ethers } from "hardhat";
 import {
@@ -9,7 +10,7 @@ import {
   Treasury,
   Token,
   TimeLock,
-} from "../../typechain";
+} from "../typechain";
 
 /**
  * Deploys the Token, TimeLock, MyGovernor, and Treasury contracts according to the given setup

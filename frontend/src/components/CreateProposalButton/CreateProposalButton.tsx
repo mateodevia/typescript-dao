@@ -1,50 +1,30 @@
-import { ethers } from "ethers";
+import { BigNumber } from "ethers";
+import { Dispatch, SetStateAction, useRef } from "react";
+import { proposeReleaseFundsToPayee } from "../../api/proposal";
+import { IContracts } from "../../types/global-types";
 
 interface CreateProposalButtonProps {
-  //  TODO: fix typings
-  selectedAccount: any;
-  contracts: {
-    token: any;
-    timeLock: any;
-    governor: any;
-    treasury: any;
-  };
+  selectedAccount: string;
+  setProposalId: Dispatch<SetStateAction<BigNumber | null>>;
+  contracts: IContracts;
 }
 
 export function CreateProposalButton(props: CreateProposalButtonProps) {
+  const proposalName = useRef<HTMLInputElement>(null);
+
   const createProposal = async () => {
-    console.log("props", props);
-    // Encode the function and argments to propose
-    const encodedFunction =
-      props.contracts.treasury.interface.encodeFunctionData("releaseFunds", [
-        props.selectedAccount,
-        ethers.utils.parseEther("10"),
-      ]);
-    console.log("encoded function");
-    console.log(
-      "args",
-      [props.contracts.treasury.address],
-      [0],
-      [encodedFunction],
-      "Hola"
+    const { proposalId } = await proposeReleaseFundsToPayee(
+      props.selectedAccount,
+      100,
+      proposalName.current?.value ?? "",
+      props.contracts
     );
-
-    // Make the proposal
-    const proposeTx = await props.contracts.governor.propose(
-      [props.contracts.treasury.address],
-      [0],
-      [encodedFunction],
-      "Hola"
-    );
-    console.log("proposed");
-
-    // Retrieve proposal id
-    const proposeReceipt = await proposeTx.wait(1);
-    console.log("proposalId", proposeReceipt.events![0].args!.proposalId);
-    return {
-      proposalId: proposeReceipt.events![0].args!.proposalId,
-      encodedFunction,
-    };
+    props.setProposalId(proposalId);
   };
-  return <button onClick={createProposal}>Create Proposal</button>;
+  return (
+    <>
+      <input type="text" ref={proposalName} />
+      <button onClick={createProposal}>Create Proposal</button>
+    </>
+  );
 }

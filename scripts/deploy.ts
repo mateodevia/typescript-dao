@@ -7,7 +7,7 @@
 import { artifacts, ethers } from "hardhat";
 import fs from "fs";
 import constants from "./constants";
-import { deploy } from "./api/deployment";
+import { deploy } from "./deployment";
 import path from "path";
 import { MyGovernor, TimeLock, Treasury, Token } from "../typechain";
 

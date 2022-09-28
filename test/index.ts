@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 import { ethers } from "hardhat";
 import { expect } from "chai";
-import { deploy } from "../scripts/api/deployment";
+import { deploy } from "../scripts/deployment";
 import { loadFixture } from "ethereum-waffle";
 import {
   excecuteProposal,
@@ -302,7 +302,7 @@ describe("Governor Contract", () => {
   };
 
   describe("When making a proposal", () => {
-    it("Should allow anyone to create a proposal", async () => {
+    it.only("Should allow anyone to create a proposal", async () => {
       // ARRANGE
       const [
         deployer,

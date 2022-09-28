@@ -1,22 +1,24 @@
 import React, { useEffect, useState } from "react";
 import logo from "./logo.svg";
 import "./App.css";
-import { ethers } from "ethers";
+import { BigNumber, ethers } from "ethers";
 import TokenArtifact from "./contracts/Token.json";
 import TimeLockArtifact from "./contracts/Treasury.json";
 import GovernorArtifact from "./contracts/MyGovernor.json";
 import TreasuryArtifact from "./contracts/Treasury.json";
 import contractAddress from "./contracts/contract-address.json";
 import { CreateProposalButton } from "./components/CreateProposalButton/CreateProposalButton";
+import { VoteButton } from "./components/VoteButton/VoteButton";
+import { IContracts } from "./types/global-types";
+import { MyGovernor, TimeLock, Token, Treasury } from "./typechain";
 
 function App() {
-  const [selectedAccount, setSelectedAccount] = useState(null);
+  const [selectedAccount, setSelectedAccount] = useState<string | null>(null);
   const [provider, setProvider] =
     useState<ethers.providers.Web3Provider | null>(null);
-  const [token, setToken] = useState<ethers.Contract | null>(null);
-  const [timeLock, setTimeLock] = useState<ethers.Contract | null>(null);
-  const [governor, setGovernor] = useState<ethers.Contract | null>(null);
-  const [treasury, setTreasury] = useState<ethers.Contract | null>(null);
+  const [contracts, setContracts] = useState<IContracts | null>(null);
+
+  const [proposalId, setProposalId] = useState<BigNumber | null>(null);
 
   const initialize = async () => {
     const _provider = new ethers.providers.Web3Provider(window.ethereum);
@@ -29,28 +31,31 @@ function App() {
       TokenArtifact.abi,
       _provider.getSigner(0)
     );
-    setToken(tokenContract);
 
     const timeLockContract = new ethers.Contract(
       contractAddress.Timelock,
       TimeLockArtifact.abi,
       _provider.getSigner(0)
     );
-    setTimeLock(timeLockContract);
 
     const governorContract = new ethers.Contract(
       contractAddress.Governor,
       GovernorArtifact.abi,
       _provider.getSigner(0)
     );
-    setGovernor(governorContract);
 
     const treasuryContract = new ethers.Contract(
       contractAddress.Treasury,
       TreasuryArtifact.abi,
       _provider.getSigner(0)
     );
-    setTreasury(treasuryContract);
+
+    setContracts({
+      token: tokenContract as Token,
+      timeLock: timeLockContract as TimeLock,
+      governor: governorContract as MyGovernor,
+      treasury: treasuryContract as Treasury,
+    });
   };
 
   const connectToWallet = async () => {
@@ -66,23 +71,20 @@ function App() {
   }, []);
 
   const renderContent = () => {
-    if (
-      selectedAccount !== null &&
-      token !== null &&
-      timeLock !== null &&
-      governor !== null &&
-      treasury !== null
-    ) {
+    if (selectedAccount !== null && contracts !== null) {
       return (
-        <CreateProposalButton
-          selectedAccount={selectedAccount}
-          contracts={{
-            token,
-            timeLock,
-            governor,
-            treasury,
-          }}
-        />
+        <React.Fragment>
+          <CreateProposalButton
+            selectedAccount={selectedAccount}
+            contracts={contracts}
+            setProposalId={setProposalId}
+          />
+          <VoteButton
+            selectedAccount={selectedAccount}
+            proposalId={proposalId}
+            contracts={contracts}
+          />
+        </React.Fragment>
       );
     } else {
       return <button onClick={connectToWallet}>Connect wallet</button>;
