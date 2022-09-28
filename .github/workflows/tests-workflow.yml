@@ -16,6 +16,6 @@ jobs:
         with:
           node-version: "14"
       - name: Install deps
-        run: npm install
+        run: npm install --include=dev
       - name: Run hardhat tests
         run: npx hardhat test
