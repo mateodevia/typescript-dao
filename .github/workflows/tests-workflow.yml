@@ -15,5 +15,7 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: "14"
-      - run: npm install
-      - run: npx hardhat test
+      - name: Install deps
+        run: npm install
+      - name: Run hardhat tests
+        run: npx hardhat test
