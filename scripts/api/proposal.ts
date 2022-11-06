@@ -1,6 +1,8 @@
+import async from "async";
 import { BigNumber } from "ethers";
 import { ethers } from "hardhat";
 import { MyGovernor, Treasury } from "../../typechain";
+import { Proposal } from "../../utils/types";
 
 /**
  * Creates a proposal to send a certain amount of ETH to a given wallet
@@ -113,4 +115,52 @@ export const excecuteProposal = async (
     ethers.utils.id(proposalDescription)
   );
   await excecuteTx.wait(1);
+};
+
+/**
+ * Retrives all the proposals available on the governor
+ * @param contracts Addresses of the contracts to use
+ * @param contracts.treasury The treasury contract
+ * @param contracts.governor The governor contract
+ * @returns {Proposal} List of proposals
+ */
+export const getProposals = async (contracts: {
+  treasury: Treasury;
+  governor: MyGovernor;
+}): Promise<Proposal[]> => {
+  // Query all ProposalCreated events
+  const filters = await contracts.governor.filters.ProposalCreated();
+  const logs = await contracts.governor.queryFilter(filters, 0, "latest");
+  const events = logs.map((log) => contracts.governor.interface.parseLog(log));
+  const proposals = await async.map(events, async (event: any) => {
+    const [state, votes] = await Promise.all([
+      await contracts.governor.state(event.args.proposalId),
+      await contracts.governor.proposalVotes(event.args.proposalId),
+    ]);
+    let proposalParams;
+    try {
+      proposalParams = contracts.treasury.interface.decodeFunctionData(
+        "releaseFunds",
+        event.args.calldatas[0]
+      );
+    } catch (e) {
+      proposalParams = {
+        _payee: "Unparseadble proposal",
+        _amount: "Unparseadble proposal",
+      };
+    }
+    return {
+      id: event.args.proposalId,
+      proposer: event.args.proposer,
+      startBlock: event.args.startBlock,
+      endBlock: event.args.endBlock,
+      description: event.args.description,
+      state,
+      votes,
+      payee: proposalParams._payee,
+      amount: proposalParams._amount,
+    };
+  });
+
+  return proposals;
 };

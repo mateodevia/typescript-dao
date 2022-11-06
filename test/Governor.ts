@@ -1,10 +1,12 @@
 /* eslint-disable no-unused-vars */
 import { ethers } from "hardhat";
 import { expect } from "chai";
+import async from "async";
 import { deploy } from "../scripts/deployment";
 import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import {
   excecuteProposal,
+  getProposals,
   proposeReleaseFundsToPayee,
   queueProposal,
   voteForProposal,
@@ -15,6 +17,7 @@ import moveBlocks from "../utils/moveBlocks";
 import Chance from "chance";
 import { MyGovernor, Token, Treasury } from "../typechain";
 import { deployFixture } from "./utils";
+import { BigNumberish } from "ethers";
 
 const chance = new Chance();
 
@@ -548,6 +551,207 @@ describe("Governor Contract", () => {
 
       const prposal3State = await governor.state(proposal1.proposalId);
       expect(prposal3State).to.equal(ProposalStates.Executed);
+    });
+  });
+
+  describe("When consulting active proposals", () => {
+    /**
+     * Creates 5 proposals in different states
+     * @returns {{ excecutedProposal: string; votingProposal: string; pendingProposal: string; failedProposal: string }} Proposal Ids for each proposal
+     * excecutedProposal -> a proposal that was successfully executed
+     * votingProposal -> a proposal that is on votingPeriod
+     * pendingProposal -> a proposal that is already approved, and it is waiting to be queued
+     * queuedProposal -> a proposal that was queued, and it is waiting to be excecuted
+     * failedProposal -> a proposal that was rejected
+     */
+    const setUpProposalsInVariousStates = async () => {
+      const [deployer, voter1, voter2, voter3, voter4, voter5, otherAddress] =
+        await ethers.getSigners();
+
+      // Create and execute a proposal
+      const excecutedDescription = "Should be excecuted";
+      const excecutedProposal = await proposeReleaseFundsToPayee(
+        otherAddress.address,
+        10,
+        excecutedDescription,
+        {
+          treasury: treasury.connect(voter1),
+          governor: governor.connect(voter1),
+        }
+      );
+      await moveBlocks(votingDelay);
+      await voteForProposal(
+        excecutedProposal.proposalId,
+        VotingOptions.InFavor,
+        {
+          governor: governor.connect(voter1),
+        }
+      );
+      await moveBlocks(votingPeriod);
+      await queueProposal(
+        excecutedDescription,
+        excecutedProposal.encodedFunction,
+        {
+          governor: governor.connect(voter1),
+          treasury: treasury.connect(voter1),
+        }
+      );
+      await moveTime(minDelay + 1);
+      await moveBlocks(1);
+      await excecuteProposal(
+        excecutedDescription,
+        excecutedProposal.encodedFunction,
+        {
+          governor: governor.connect(deployer),
+          treasury: treasury.connect(deployer),
+        }
+      );
+
+      // Create and approve a proposal
+      const approvedDescription = "Should be approved";
+      const approvedProposal = await proposeReleaseFundsToPayee(
+        otherAddress.address,
+        10,
+        approvedDescription,
+        {
+          treasury: treasury.connect(voter1),
+          governor: governor.connect(voter1),
+        }
+      );
+      await moveBlocks(votingDelay);
+      await voteForProposal(
+        approvedProposal.proposalId,
+        VotingOptions.InFavor,
+        {
+          governor: governor.connect(voter1),
+        }
+      );
+      await moveBlocks(votingPeriod);
+
+      // Create, approve, and queue a proposal
+      const queuedDescription = "Should be queued";
+      const queuedProposal = await proposeReleaseFundsToPayee(
+        otherAddress.address,
+        10,
+        queuedDescription,
+        {
+          treasury: treasury.connect(voter1),
+          governor: governor.connect(voter1),
+        }
+      );
+      await moveBlocks(votingDelay);
+      await voteForProposal(queuedProposal.proposalId, VotingOptions.InFavor, {
+        governor: governor.connect(voter1),
+      });
+      await moveBlocks(votingPeriod);
+      await queueProposal(queuedDescription, queuedProposal.encodedFunction, {
+        governor: governor.connect(voter1),
+        treasury: treasury.connect(voter1),
+      });
+
+      // Create and vote against a proposal
+
+      const failedDescription = "Should be defeated";
+      const failedProposal = await proposeReleaseFundsToPayee(
+        otherAddress.address,
+        10,
+        failedDescription,
+        {
+          treasury: treasury.connect(voter1),
+          governor: governor.connect(voter1),
+        }
+      );
+      await moveBlocks(votingDelay);
+      await voteForProposal(failedProposal.proposalId, VotingOptions.Against, {
+        governor: governor.connect(voter1),
+      });
+      await moveBlocks(votingPeriod);
+
+      // Create a proposal and start its voting period
+      const votingDescription = "Should be pending";
+      const votingProposal = await proposeReleaseFundsToPayee(
+        otherAddress.address,
+        10,
+        votingDescription,
+        {
+          treasury: treasury.connect(voter1),
+          governor: governor.connect(voter1),
+        }
+      );
+      await moveBlocks(votingDelay);
+
+      return {
+        excecutedProposal,
+        approvedProposal,
+        votingProposal,
+        queuedProposal,
+        failedProposal,
+      };
+    };
+
+    it("Should return a list of proposals", async () => {
+      // ARRANGE
+      const [deployer, voter1, voter2, voter3, voter4, voter5, otherAddress] =
+        await ethers.getSigners();
+      const {
+        excecutedProposal,
+        approvedProposal,
+        votingProposal,
+        queuedProposal,
+        failedProposal,
+      } = await setUpProposalsInVariousStates();
+
+      // ACT
+      const proposals = await getProposals({
+        treasury: treasury.connect(deployer),
+        governor: governor.connect(deployer),
+      });
+
+      // ASSERT
+      const excecuted = proposals.find(
+        (proposal) => proposal.state === ProposalStates.Executed
+      );
+      expect(excecuted?.id).equals(excecutedProposal.proposalId);
+      expect(excecuted?.proposer).equals(voter1.address);
+      expect(excecuted?.description).equals("Should be excecuted");
+      expect(excecuted?.payee).equals(otherAddress.address);
+      expect(excecuted?.amount).equals(ethers.utils.parseEther("10"));
+
+      const approved = proposals.find(
+        (proposal) => proposal.state === ProposalStates.Succeeded
+      );
+      expect(approved?.id).equals(approvedProposal.proposalId);
+      expect(approved?.proposer).equals(voter1.address);
+      expect(approved?.description).equals("Should be approved");
+      expect(approved?.payee).equals(otherAddress.address);
+      expect(approved?.amount).equals(ethers.utils.parseEther("10"));
+
+      const voting = proposals.find(
+        (proposal) => proposal.state === ProposalStates.Pending
+      );
+      expect(voting?.id).equals(votingProposal.proposalId);
+      expect(voting?.proposer).equals(voter1.address);
+      expect(voting?.description).equals("Should be pending");
+      expect(voting?.payee).equals(otherAddress.address);
+      expect(voting?.amount).equals(ethers.utils.parseEther("10"));
+
+      const queued = proposals.find(
+        (proposal) => proposal.state === ProposalStates.Queued
+      );
+      expect(queued?.id).equals(queuedProposal.proposalId);
+      expect(queued?.proposer).equals(voter1.address);
+      expect(queued?.description).equals("Should be queued");
+      expect(queued?.payee).equals(otherAddress.address);
+      expect(queued?.amount).equals(ethers.utils.parseEther("10"));
+
+      const failed = proposals.find(
+        (proposal) => proposal.state === ProposalStates.Defeated
+      );
+      expect(failed?.id).equals(failedProposal.proposalId);
+      expect(failed?.proposer).equals(voter1.address);
+      expect(failed?.description).equals("Should be defeated");
+      expect(failed?.payee).equals(otherAddress.address);
+      expect(failed?.amount).equals(ethers.utils.parseEther("10"));
     });
   });
 });
