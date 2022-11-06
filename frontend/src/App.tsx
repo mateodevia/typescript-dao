@@ -11,6 +11,7 @@ import { CreateProposalButton } from "./components/CreateProposalButton/CreatePr
 import { VoteButton } from "./components/VoteButton/VoteButton";
 import { IContracts } from "./types/global-types";
 import { MyGovernor, TimeLock, Token, Treasury } from "./typechain";
+import { ProposalList } from "./components/ProposalList/ProposalList";
 
 function App() {
   const [selectedAccount, setSelectedAccount] = useState<string | null>(null);
@@ -79,11 +80,12 @@ function App() {
             contracts={contracts}
             setProposalId={setProposalId}
           />
-          <VoteButton
+          {/* <VoteButton
             selectedAccount={selectedAccount}
             proposalId={proposalId}
             contracts={contracts}
-          />
+          /> */}
+          <ProposalList contracts={contracts} />
         </React.Fragment>
       );
     } else {
@@ -92,15 +94,12 @@ function App() {
   };
 
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        {provider ? (
-          <div>{renderContent()}</div>
-        ) : (
-          <h1>Please download metamask</h1>
-        )}
-      </header>
+    <div>
+      {provider ? (
+        <div>{renderContent()}</div>
+      ) : (
+        <h1>Please download metamask</h1>
+      )}
     </div>
   );
 }

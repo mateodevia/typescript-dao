@@ -11,7 +11,7 @@ import {
   queueProposal,
   voteForProposal,
 } from "../scripts/api/proposal";
-import { ProposalStates, VotingOptions } from "../utils/types";
+import { ProposalStates, VotingOptions } from "../scripts/api/types";
 import moveTime from "../utils/moveTime";
 import moveBlocks from "../utils/moveBlocks";
 import Chance from "chance";

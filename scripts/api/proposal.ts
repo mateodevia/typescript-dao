@@ -2,7 +2,7 @@ import async from "async";
 import { BigNumber } from "ethers";
 import { ethers } from "hardhat";
 import { MyGovernor, Treasury } from "../../typechain";
-import { Proposal } from "../../utils/types";
+import { Proposal } from "./types";
 
 /**
  * Creates a proposal to send a certain amount of ETH to a given wallet
