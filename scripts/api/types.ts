@@ -1,5 +1,4 @@
 // eslint-disable-next-line node/no-unpublished-import
-import { BigNumber } from "ethers";
 
 /* eslint-disable no-unused-vars */
 export enum ProposalStates {
@@ -22,15 +21,15 @@ export enum VotingOptions {
 export interface Proposal {
   id: string;
   proposer: string;
-  startBlock: BigNumber;
-  endBlock: BigNumber;
+  startBlock: number;
+  endBlock: number;
   description: string;
   state: ProposalStates;
   votes: {
-    againstVotes: BigNumber;
-    forVotes: BigNumber;
-    abstainVotes: BigNumber;
+    againstVotes: string;
+    forVotes: string;
+    abstainVotes: string;
   };
   payee: string;
-  amount: BigNumber;
+  amount: string;
 }

@@ -1,6 +1,4 @@
 import React, { useEffect, useState } from "react";
-import logo from "./logo.svg";
-import "./App.css";
 import { BigNumber, ethers } from "ethers";
 import TokenArtifact from "./contracts/Token.json";
 import TimeLockArtifact from "./contracts/Treasury.json";
@@ -12,6 +10,8 @@ import { VoteButton } from "./components/VoteButton/VoteButton";
 import { IContracts } from "./types/global-types";
 import { MyGovernor, TimeLock, Token, Treasury } from "./typechain";
 import { ProposalList } from "./components/ProposalList/ProposalList";
+import { useSelector, useDispatch } from "react-redux";
+import { AppDispatch, RootState } from "./store";
 
 function App() {
   const [selectedAccount, setSelectedAccount] = useState<string | null>(null);
@@ -20,6 +20,8 @@ function App() {
   const [contracts, setContracts] = useState<IContracts | null>(null);
 
   const [proposalId, setProposalId] = useState<BigNumber | null>(null);
+
+  const dispatch: AppDispatch = useDispatch();
 
   const initialize = async () => {
     const _provider = new ethers.providers.Web3Provider(window.ethereum);

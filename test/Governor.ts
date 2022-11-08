@@ -715,7 +715,7 @@ describe("Governor Contract", () => {
       expect(excecuted?.proposer).equals(voter1.address);
       expect(excecuted?.description).equals("Should be excecuted");
       expect(excecuted?.payee).equals(otherAddress.address);
-      expect(excecuted?.amount).equals(ethers.utils.parseEther("10"));
+      expect(excecuted?.amount).equals("10.0");
 
       const approved = proposals.find(
         (proposal) => proposal.state === ProposalStates.Succeeded
@@ -724,7 +724,7 @@ describe("Governor Contract", () => {
       expect(approved?.proposer).equals(voter1.address);
       expect(approved?.description).equals("Should be approved");
       expect(approved?.payee).equals(otherAddress.address);
-      expect(approved?.amount).equals(ethers.utils.parseEther("10"));
+      expect(approved?.amount).equals("10.0");
 
       const voting = proposals.find(
         (proposal) => proposal.state === ProposalStates.Pending
@@ -733,7 +733,7 @@ describe("Governor Contract", () => {
       expect(voting?.proposer).equals(voter1.address);
       expect(voting?.description).equals("Should be pending");
       expect(voting?.payee).equals(otherAddress.address);
-      expect(voting?.amount).equals(ethers.utils.parseEther("10"));
+      expect(voting?.amount).equals("10.0");
 
       const queued = proposals.find(
         (proposal) => proposal.state === ProposalStates.Queued
@@ -742,7 +742,7 @@ describe("Governor Contract", () => {
       expect(queued?.proposer).equals(voter1.address);
       expect(queued?.description).equals("Should be queued");
       expect(queued?.payee).equals(otherAddress.address);
-      expect(queued?.amount).equals(ethers.utils.parseEther("10"));
+      expect(queued?.amount).equals("10.0");
 
       const failed = proposals.find(
         (proposal) => proposal.state === ProposalStates.Defeated
@@ -751,7 +751,7 @@ describe("Governor Contract", () => {
       expect(failed?.proposer).equals(voter1.address);
       expect(failed?.description).equals("Should be defeated");
       expect(failed?.payee).equals(otherAddress.address);
-      expect(failed?.amount).equals(ethers.utils.parseEther("10"));
+      expect(failed?.amount).equals("10.0");
     });
   });
 });

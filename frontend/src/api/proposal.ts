@@ -39,7 +39,6 @@ export const proposeReleaseFundsToPayee = async (
 
   // Retrieve proposal id
   const proposeReceipt = await proposeTx.wait(1);
-  console.log(proposeReceipt);
   return {
     proposalId: proposeReceipt.events![0].args!.proposalId,
     encodedFunction,
@@ -151,15 +150,20 @@ export const getProposals = async (contracts: {
       };
     }
     return {
-      id: event.args.proposalId,
+      // Mirar por qué el proposalId no se está parseando bien a string
+      id: event.args.proposalId.toString(),
       proposer: event.args.proposer,
-      startBlock: event.args.startBlock,
-      endBlock: event.args.endBlock,
+      startBlock: event.args.startBlock.toNumber(),
+      endBlock: event.args.endBlock.toNumber(),
       description: event.args.description,
       state,
-      votes,
+      votes: {
+        againstVotes: ethers.utils.formatEther(votes.againstVotes),
+        forVotes: ethers.utils.formatEther(votes.forVotes),
+        abstainVotes: ethers.utils.formatEther(votes.abstainVotes),
+      },
       payee: proposalParams._payee,
-      amount: proposalParams._amount,
+      amount: ethers.utils.formatEther(proposalParams._amount),
     };
   });
 
