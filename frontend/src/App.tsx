@@ -10,24 +10,25 @@ import { VoteButton } from "./components/VoteButton/VoteButton";
 import { IContracts } from "./types/global-types";
 import { MyGovernor, TimeLock, Token, Treasury } from "./typechain";
 import { ProposalList } from "./components/ProposalList/ProposalList";
-import { useSelector, useDispatch } from "react-redux";
-import { AppDispatch, RootState } from "./store";
+
+export const EthersContext = React.createContext<{
+  contracts: IContracts | null;
+  provider: ethers.providers.Web3Provider | null;
+}>({
+  contracts: null,
+  provider: null,
+});
 
 function App() {
   const [selectedAccount, setSelectedAccount] = useState<string | null>(null);
   const [provider, setProvider] =
     useState<ethers.providers.Web3Provider | null>(null);
   const [contracts, setContracts] = useState<IContracts | null>(null);
-
   const [proposalId, setProposalId] = useState<BigNumber | null>(null);
-
-  const dispatch: AppDispatch = useDispatch();
 
   const initialize = async () => {
     const _provider = new ethers.providers.Web3Provider(window.ethereum);
-    setProvider(_provider);
-    const { chainId } = await _provider.getNetwork();
-    console.log("chainId", chainId);
+    await _provider.getNetwork();
 
     const tokenContract = new ethers.Contract(
       contractAddress.Token,
@@ -53,6 +54,7 @@ function App() {
       _provider.getSigner(0)
     );
 
+    setProvider(_provider);
     setContracts({
       token: tokenContract as Token,
       timeLock: timeLockContract as TimeLock,
@@ -74,12 +76,11 @@ function App() {
   }, []);
 
   const renderContent = () => {
-    if (selectedAccount !== null && contracts !== null) {
+    if (selectedAccount !== null) {
       return (
         <React.Fragment>
           <CreateProposalButton
             selectedAccount={selectedAccount}
-            contracts={contracts}
             setProposalId={setProposalId}
           />
           {/* <VoteButton
@@ -87,7 +88,7 @@ function App() {
             proposalId={proposalId}
             contracts={contracts}
           /> */}
-          <ProposalList contracts={contracts} />
+          <ProposalList />
         </React.Fragment>
       );
     } else {
@@ -98,7 +99,14 @@ function App() {
   return (
     <div>
       {provider ? (
-        <div>{renderContent()}</div>
+        <EthersContext.Provider
+          value={{
+            provider,
+            contracts,
+          }}
+        >
+          <div>{renderContent()}</div>
+        </EthersContext.Provider>
       ) : (
         <h1>Please download metamask</h1>
       )}

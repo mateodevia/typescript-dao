@@ -1,27 +1,35 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { getProposals } from "../../api/proposal";
-import { Proposal } from "../../api/types";
 import { AppDispatch, RootState } from "../../store";
 import { useDispatch, useSelector } from "react-redux";
-import { IContracts } from "../../types/global-types";
 import { proposalUpdate } from "../../reducers/proposals";
+import React from "react";
+import { EthersContext } from "../../App";
 
-interface ProposalListProps {
-  contracts: IContracts;
-}
-
-export function ProposalList(props: ProposalListProps) {
+export function ProposalList() {
+  const { contracts, provider } = React.useContext(EthersContext);
   const proposals = useSelector((state: RootState) => state.proposals);
-
   const dispatch: AppDispatch = useDispatch();
-  const fetchProposals = async () => {
-    const proposals = await getProposals(props.contracts);
-    dispatch(proposalUpdate(proposals));
-  };
 
   useEffect(() => {
     fetchProposals();
+    suscribeToProposals();
   }, []);
+
+  // Null safety if EthersContext is not is not available
+  if (!contracts || !provider) return <div></div>;
+
+  const fetchProposals = async () => {
+    const proposals = await getProposals(contracts);
+    dispatch(proposalUpdate(proposals));
+  };
+
+  const suscribeToProposals = async () => {
+    const filters = await contracts.governor.filters.ProposalCreated();
+    provider.on(filters, () => {
+      fetchProposals();
+    });
+  };
 
   return (
     <>

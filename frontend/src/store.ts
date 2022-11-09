@@ -1,8 +1,10 @@
 import { combineReducers } from "redux";
 import { configureStore } from "@reduxjs/toolkit";
 import { proposalsReducer } from "./reducers/proposals";
+import { providerReducer } from "./reducers/provider";
 
 export const rootReducer = combineReducers({
+  provider: providerReducer,
   proposals: proposalsReducer,
 });
 
