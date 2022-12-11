@@ -1,6 +1,6 @@
 export const colors = {
   primary: "#212B36",
-  accent: "#ed6c02",
+  accent: "#fa531c",
 };
 
 export const accentButton = {
