@@ -3,35 +3,54 @@ import Button from "@mui/material/Button";
 import Container from "@mui/material/Container";
 import InputAdornment from "@mui/material/InputAdornment";
 import TextField from "@mui/material/TextField";
-import { BigNumber } from "ethers";
 import React from "react";
-import { Dispatch, SetStateAction, useRef } from "react";
 import { useSelector } from "react-redux";
-import { proposeReleaseFundsToPayee } from "../../../api/proposal";
 import { EthersContext } from "../../../App";
 import { RootState } from "../../../store";
 import { accentButton, colors } from "../../../styles/globals";
+import { useForm } from "react-hook-form";
+import { proposeReleaseFundsToPayee } from "../../../api/proposal";
+
+interface CreateProposalForm {
+  proposalPayee: string;
+  proposalAmount: number;
+}
 
 export function CreateProposalInput() {
   const { contracts } = React.useContext(EthersContext);
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isValid },
+  } = useForm<CreateProposalForm>({
+    mode: "onChange",
+    reValidateMode: "onChange",
+  });
+
+  const { ref: payeeRef, ...payeeProps } = register("proposalPayee", {
+    required: true,
+    pattern: /^0x[a-fA-F0-9]{40}$/g,
+  });
+  const { ref: amountRef, ...amountProps } = register("proposalAmount", {
+    required: true,
+  });
 
   const selectedAccount = useSelector(
     (state: RootState) => state.selectedAccount
   );
 
-  const proposalName = useRef<HTMLInputElement>(null);
-
   // Null safety if ethers context is not is not available
   if (!contracts || !selectedAccount) return <div></div>;
 
-  const createProposal = async () => {
-    const { proposalId } = await proposeReleaseFundsToPayee(
-      selectedAccount,
-      100,
-      proposalName.current?.value ?? "",
-      contracts
-    );
-    console.log("Created proposal", proposalId);
+  const createProposal = async (formData: CreateProposalForm) => {
+    // const { proposalId } = await proposeReleaseFundsToPayee(
+    //   formData.proposalPayee,
+    //   formData.proposalAmount,
+    //   "ooo",
+    //   contracts
+    // );
+    // console.log("Created proposal", proposalId);
   };
   return (
     <div
@@ -45,7 +64,7 @@ export function CreateProposalInput() {
       }}
     >
       <Container maxWidth="md">
-        <div
+        <form
           style={{
             backgroundColor: "white",
             width: "100%",
@@ -55,11 +74,12 @@ export function CreateProposalInput() {
           }}
         >
           <TextField
-            inputRef={proposalName}
             label="Who´s receiving the money?"
             variant="standard"
             color="warning"
             size="small"
+            inputRef={payeeRef}
+            {...payeeProps}
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
@@ -72,8 +92,12 @@ export function CreateProposalInput() {
               margin: "4px 16px",
               padding: "4px",
             }}
+            helperText={!!errors.proposalPayee ? "invalid address" : undefined}
+            error={!!errors.proposalPayee}
           />
           <TextField
+            inputRef={amountRef}
+            {...amountProps}
             prefix="Ξ"
             label="How many ethers?"
             variant="standard"
@@ -89,15 +113,18 @@ export function CreateProposalInput() {
               margin: "4px 16px",
               padding: "4px",
             }}
+            helperText={!!errors.proposalAmount ? "invalid address" : undefined}
+            error={!!errors.proposalAmount}
           />
           <Button
-            onClick={createProposal}
+            onClick={handleSubmit(createProposal)}
             variant="contained"
             sx={accentButton}
+            disabled={!isValid}
           >
             Propose
           </Button>
-        </div>
+        </form>
       </Container>
     </div>
   );
