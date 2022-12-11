@@ -28,7 +28,7 @@ const stateNamesMap: Record<ProposalStates, string> = {
   [ProposalStates.Executed]: "EXCECUTED",
 };
 
-export function ProposalDetail(props: { proposal: Proposal }) {
+export function ProposalListItem(props: { proposal: Proposal }) {
   return (
     <>
       <Card sx={{ m: 2, borderRadius: "10px" }}>

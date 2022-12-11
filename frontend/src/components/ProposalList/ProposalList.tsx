@@ -5,7 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { proposalUpdate } from "../../reducers/proposals";
 import React from "react";
 import { EthersContext } from "../../App";
-import { ProposalDetail } from "./ProposalDetail/ProposalDetail";
+import { ProposalListItem } from "./ProposalListItem/ProposalListItem";
 import Card from "@mui/material/Card";
 import { colors } from "../../styles/globals";
 
@@ -45,7 +45,7 @@ export function ProposalList() {
           Checkout the existing proposals
         </h2>
         {proposals.map((p, i) => (
-          <ProposalDetail key={i} proposal={p} />
+          <ProposalListItem key={i} proposal={p} />
         ))}
       </Card>
     </>
