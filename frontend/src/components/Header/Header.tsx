@@ -44,9 +44,20 @@ export function Header() {
       return <CreateProposalInput />;
     } else {
       return (
-        <Button onClick={connectToWallet} variant="contained" sx={accentButton}>
-          Connect wallet
-        </Button>
+        <Container
+          maxWidth="md"
+          sx={{
+            textAlign: "center",
+          }}
+        >
+          <Button
+            onClick={connectToWallet}
+            variant="contained"
+            sx={accentButton}
+          >
+            Connect wallet
+          </Button>
+        </Container>
       );
     }
   };
@@ -66,14 +77,14 @@ export function Header() {
           <span style={{ color: colors.accent }}>DAO proposal</span> done!
         </h1>
         {treasuryBalance ? (
-          <h3 style={{ marginBottom: "30px", marginTop: "0px" }}>
+          <h3 style={{ marginBottom: "20px", marginTop: "0px" }}>
             We have {treasuryBalance} ETH available
           </h3>
         ) : (
           <></>
         )}
-        {renderContent()}
       </Container>
+      {renderContent()}
     </>
   );
 }

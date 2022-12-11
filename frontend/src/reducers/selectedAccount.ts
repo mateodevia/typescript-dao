@@ -1,7 +1,7 @@
 import { createAction, createReducer } from "@reduxjs/toolkit";
 
 export const selectedAccountUpdate = createAction<string | null>(
-  "proposals/update"
+  "selectedAccount/update"
 );
 
 export const selectedAccountReducer = createReducer<string | null>(
