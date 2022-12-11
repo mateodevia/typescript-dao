@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Container from "@mui/material/Container";
 import TextField from "@mui/material/TextField";
 import { CreateProposalInput } from "./CreateProposalButton/CreateProposalInput";
@@ -6,31 +6,42 @@ import { EthersContext } from "../../App";
 import { BigNumber, ethers } from "ethers";
 import { accentButton, colors } from "../../styles/globals";
 import Button from "@mui/material/Button";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "../../store";
+import { selectedAccountUpdate } from "../../reducers/selectedAccount";
+import { getTreasuryBalance } from "../../api/treasury";
 
 export function Header() {
-  const { provider } = React.useContext(EthersContext);
+  const { contracts, provider } = React.useContext(EthersContext);
 
-  const [selectedAccount, setSelectedAccount] = useState<string | null>(null);
-  const [proposalId, setProposalId] = useState<BigNumber | null>(null);
+  const [treasuryBalance, setTreasuryBalance] = useState<string | null>(null);
+
+  const selectedAccount = useSelector(
+    (state: RootState) => state.selectedAccount
+  );
+  const dispatch: AppDispatch = useDispatch();
+
+  useEffect(() => {
+    fetchTreasuryBalance();
+  }, []);
+
+  // Null safety if EthersContext is not is not available
+  if (!contracts || !provider) return <div></div>;
+
+  const fetchTreasuryBalance = async () => {
+    const balance = await getTreasuryBalance(provider, contracts);
+    setTreasuryBalance(balance);
+  };
 
   const connectToWallet = async () => {
-    if (provider) {
-      const [account] = await provider.send("eth_requestAccounts", []);
-      setSelectedAccount(account);
-      console.log("Connecetd to wallet", account);
-    } else console.error("Trying to connect to wallet before initialization");
+    const [account] = await provider.send("eth_requestAccounts", []);
+    dispatch(selectedAccountUpdate(account));
+    console.log("Connecetd to wallet", account);
   };
 
   const renderContent = () => {
     if (selectedAccount !== null) {
-      return (
-        <>
-          <CreateProposalInput
-            selectedAccount={selectedAccount}
-            setProposalId={setProposalId}
-          />
-        </>
-      );
+      return <CreateProposalInput />;
     } else {
       return (
         <Button onClick={connectToWallet} variant="contained" sx={accentButton}>
@@ -54,9 +65,13 @@ export function Header() {
           Get your first{" "}
           <span style={{ color: colors.accent }}>DAO proposal</span> done!
         </h1>
-        <h3 style={{ marginBottom: "30px", marginTop: "0px" }}>
-          We have 1,000,000 ETH available
-        </h3>
+        {treasuryBalance ? (
+          <h3 style={{ marginBottom: "30px", marginTop: "0px" }}>
+            We have {treasuryBalance} ETH available
+          </h3>
+        ) : (
+          <></>
+        )}
         {renderContent()}
       </Container>
     </>

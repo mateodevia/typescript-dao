@@ -42,7 +42,7 @@ describe("Treasury Contract", () => {
     // ARRANGE
 
     // ACT
-    const res = await getTreasuryBalance({ treasury });
+    const res = await getTreasuryBalance(ethers.provider, { treasury });
 
     // ASSERT
     expect(res).to.be.equal(`${treasurySupply}.0`);
@@ -88,7 +88,7 @@ describe("Treasury Contract", () => {
     );
 
     // ACT
-    const res = await getTreasuryBalance({ treasury });
+    const res = await getTreasuryBalance(ethers.provider, { treasury });
 
     // ASSERT
     expect(res).to.be.equal(`${treasurySupply - proposalAmount}.0`);

@@ -5,31 +5,32 @@ import TextField from "@mui/material/TextField";
 import { BigNumber } from "ethers";
 import React from "react";
 import { Dispatch, SetStateAction, useRef } from "react";
+import { useSelector } from "react-redux";
 import { proposeReleaseFundsToPayee } from "../../../api/proposal";
 import { EthersContext } from "../../../App";
+import { RootState } from "../../../store";
 import { accentButton } from "../../../styles/globals";
 
-interface CreateProposalButtonProps {
-  selectedAccount: string;
-  setProposalId: Dispatch<SetStateAction<BigNumber | null>>;
-}
-
-export function CreateProposalInput(props: CreateProposalButtonProps) {
+export function CreateProposalInput() {
   const { contracts } = React.useContext(EthersContext);
+
+  const selectedAccount = useSelector(
+    (state: RootState) => state.selectedAccount
+  );
 
   const proposalName = useRef<HTMLInputElement>(null);
 
   // Null safety if ethers context is not is not available
-  if (!contracts) return <div></div>;
+  if (!contracts || !selectedAccount) return <div></div>;
 
   const createProposal = async () => {
     const { proposalId } = await proposeReleaseFundsToPayee(
-      props.selectedAccount,
+      selectedAccount,
       100,
       proposalName.current?.value ?? "",
       contracts
     );
-    props.setProposalId(proposalId);
+    console.log("Created proposal", proposalId);
   };
   return (
     <>

@@ -1,5 +1,5 @@
-import { ethers } from "hardhat";
-import { Treasury } from "../../typechain";
+import { ethers } from "ethers";
+import { Treasury } from "../typechain";
 import { HardhatEthersHelpers } from "@nomiclabs/hardhat-ethers/types";
 
 /**
