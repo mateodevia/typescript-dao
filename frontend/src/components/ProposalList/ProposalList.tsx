@@ -5,6 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { proposalUpdate } from "../../reducers/proposals";
 import React from "react";
 import { EthersContext } from "../../App";
+import { ProposalDetail } from "./ProposalDetail/ProposalDetail";
 
 export function ProposalList() {
   const { contracts, provider } = React.useContext(EthersContext);
@@ -34,7 +35,7 @@ export function ProposalList() {
   return (
     <>
       {proposals.map((p, i) => (
-        <div key={i}>{p.description}</div>
+        <ProposalDetail key={i} proposal={p} />
       ))}
     </>
   );
