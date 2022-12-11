@@ -6,6 +6,8 @@ import { proposalUpdate } from "../../reducers/proposals";
 import React from "react";
 import { EthersContext } from "../../App";
 import { ProposalDetail } from "./ProposalDetail/ProposalDetail";
+import Card from "@mui/material/Card";
+import { colors } from "../../styles/globals";
 
 export function ProposalList() {
   const { contracts, provider } = React.useContext(EthersContext);
@@ -34,9 +36,18 @@ export function ProposalList() {
 
   return (
     <>
-      {proposals.map((p, i) => (
-        <ProposalDetail key={i} proposal={p} />
-      ))}
+      <Card
+        sx={{
+          margin: "10vh 3vw",
+        }}
+      >
+        <h2 style={{ textAlign: "center", color: colors.primary }}>
+          Checkout the existing proposals
+        </h2>
+        {proposals.map((p, i) => (
+          <ProposalDetail key={i} proposal={p} />
+        ))}
+      </Card>
     </>
   );
 }

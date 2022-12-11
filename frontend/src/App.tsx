@@ -9,6 +9,9 @@ import { MyGovernor, TimeLock, Token, Treasury } from "./typechain";
 import { ProposalList } from "./components/ProposalList/ProposalList";
 import { Header } from "./components/Header/Header";
 import { ethers } from "ethers";
+import { accentButton, colors } from "./styles/globals";
+import Container from "@mui/material/Container";
+import Button from "@mui/material/Button";
 
 export const EthersContext = React.createContext<{
   contracts: IContracts | null;
@@ -65,28 +68,60 @@ function App() {
   }, []);
 
   return (
-    <div>
-      {provider ? (
-        <EthersContext.Provider
-          value={{
-            provider,
-            contracts,
-          }}
-        >
-          <div>
-            <Header />
-            {/* <VoteButton
+    <>
+      <div
+        style={{
+          width: "100vw",
+          height: "90vh",
+          backgroundColor: colors.primary,
+          position: "absolute",
+          zIndex: "-1",
+        }}
+      ></div>
+      <div>
+        {provider ? (
+          <EthersContext.Provider
+            value={{
+              provider,
+              contracts,
+            }}
+          >
+            <div>
+              <Header />
+              {/* <VoteButton
             selectedAccount={selectedAccount}
             proposalId={proposalId}
             contracts={contracts}
           /> */}
-            <ProposalList />
-          </div>
-        </EthersContext.Provider>
-      ) : (
-        <h1>Please download metamask</h1>
-      )}
-    </div>
+              <ProposalList />
+            </div>
+          </EthersContext.Provider>
+        ) : (
+          <Container
+            maxWidth="md"
+            sx={{
+              color: "white",
+              height: "100%",
+              textAlign: "center",
+              paddingTop: "20vh",
+            }}
+          >
+            <h1 style={{ marginBottom: "10px" }}>
+              Please download{" "}
+              <span style={{ color: colors.accent }}> metamask</span> to use
+              this awesome DAO
+            </h1>
+            <Button
+              href="https://metamask.io/download/"
+              variant="contained"
+              sx={accentButton}
+            >
+              Download now
+            </Button>
+          </Container>
+        )}
+      </div>
+    </>
   );
 }
 

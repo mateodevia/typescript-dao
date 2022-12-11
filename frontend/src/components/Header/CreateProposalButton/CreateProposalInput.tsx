@@ -43,7 +43,7 @@ export function CreateProposalInput(props: CreateProposalButtonProps) {
         }}
       >
         <TextField
-          ref={proposalName}
+          inputRef={proposalName}
           label="Who´s receiving the money?"
           variant="standard"
           color="warning"

@@ -41,32 +41,24 @@ export function Header() {
   };
   return (
     <>
-      <div
-        style={{
-          width: "100vw",
-          height: "90vh",
-          backgroundColor: colors.primary,
+      <Container
+        maxWidth="md"
+        sx={{
+          color: "white",
+          height: "100%",
+          textAlign: "center",
+          paddingTop: "20vh",
         }}
       >
-        <Container
-          maxWidth="md"
-          sx={{
-            color: "white",
-            height: "100%",
-            textAlign: "center",
-            paddingTop: "20vh",
-          }}
-        >
-          <h1 style={{ marginBottom: "10px" }}>
-            Get your first{" "}
-            <span style={{ color: colors.accent }}>DAO proposal</span> done!
-          </h1>
-          <h3 style={{ marginBottom: "30px", marginTop: "0px" }}>
-            We have 1,000,000 ETH available
-          </h3>
-          {renderContent()}
-        </Container>
-      </div>
+        <h1 style={{ marginBottom: "10px" }}>
+          Get your first{" "}
+          <span style={{ color: colors.accent }}>DAO proposal</span> done!
+        </h1>
+        <h3 style={{ marginBottom: "30px", marginTop: "0px" }}>
+          We have 1,000,000 ETH available
+        </h3>
+        {renderContent()}
+      </Container>
     </>
   );
 }
