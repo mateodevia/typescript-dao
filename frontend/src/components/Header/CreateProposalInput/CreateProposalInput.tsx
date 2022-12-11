@@ -3,13 +3,12 @@ import Button from "@mui/material/Button";
 import Container from "@mui/material/Container";
 import InputAdornment from "@mui/material/InputAdornment";
 import TextField from "@mui/material/TextField";
-import React from "react";
-import { useSelector } from "react-redux";
+import React, { useState } from "react";
 import { EthersContext } from "../../../App";
-import { RootState } from "../../../store";
 import { accentButton, colors } from "../../../styles/globals";
 import { useForm } from "react-hook-form";
-import { proposeReleaseFundsToPayee } from "../../../api/proposal";
+import Dialog from "@mui/material/Dialog";
+import { CreateProposalDialog } from "./CreateProposalDialog/CreateProposalDIalog";
 
 interface CreateProposalForm {
   proposalPayee: string;
@@ -18,6 +17,10 @@ interface CreateProposalForm {
 
 export function CreateProposalInput() {
   const { contracts } = React.useContext(EthersContext);
+
+  const [createDialog, setCreateDialog] = useState<boolean>(false);
+  const [payee, setPayee] = useState<string | null>(null);
+  const [amount, setAmount] = useState<number | null>(null);
 
   const {
     register,
@@ -36,22 +39,15 @@ export function CreateProposalInput() {
     required: true,
   });
 
-  const selectedAccount = useSelector(
-    (state: RootState) => state.selectedAccount
-  );
-
   // Null safety if ethers context is not is not available
-  if (!contracts || !selectedAccount) return <div></div>;
+  if (!contracts) return <div></div>;
 
   const createProposal = async (formData: CreateProposalForm) => {
-    // const { proposalId } = await proposeReleaseFundsToPayee(
-    //   formData.proposalPayee,
-    //   formData.proposalAmount,
-    //   "ooo",
-    //   contracts
-    // );
-    // console.log("Created proposal", proposalId);
+    setAmount(formData.proposalAmount);
+    setPayee(formData.proposalPayee);
+    setCreateDialog(true);
   };
+
   return (
     <div
       style={{
@@ -63,6 +59,17 @@ export function CreateProposalInput() {
         padding: "10px",
       }}
     >
+      <Dialog
+        maxWidth={false}
+        onClose={() => setCreateDialog(false)}
+        open={createDialog}
+      >
+        <CreateProposalDialog
+          payee={payee}
+          amount={amount}
+          onSuccess={() => setCreateDialog(false)}
+        />
+      </Dialog>
       <Container maxWidth="md">
         <form
           style={{

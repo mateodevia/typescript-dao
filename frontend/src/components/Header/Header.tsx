@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import Container from "@mui/material/Container";
 import TextField from "@mui/material/TextField";
-import { CreateProposalInput } from "./CreateProposalButton/CreateProposalInput";
+import { CreateProposalInput } from "./CreateProposalInput/CreateProposalInput";
 import { EthersContext } from "../../App";
 import { BigNumber, ethers } from "ethers";
 import { accentButton, colors } from "../../styles/globals";
