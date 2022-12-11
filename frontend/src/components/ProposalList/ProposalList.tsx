@@ -24,7 +24,7 @@ export function ProposalList() {
 
   const fetchProposals = async () => {
     const proposals = await getProposals(contracts);
-    dispatch(proposalUpdate(proposals));
+    dispatch(proposalUpdate(proposals.reverse()));
   };
 
   const suscribeToProposals = async () => {
