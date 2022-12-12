@@ -6,6 +6,7 @@ import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import Chance from "chance";
 import { Token } from "../typechain";
 import { deployFixture } from "./utils";
+import { getShareHolders } from "../scripts/api/users";
 
 const chance = new Chance();
 
@@ -92,6 +93,22 @@ describe("Token Contract", () => {
       );
       expect(Number(ethers.utils.formatEther(originalBalance))).to.equal(200);
       expect(Number(ethers.utils.formatEther(finalBalance))).to.equal(210);
+    });
+  });
+  describe("When queryng the share holders", () => {
+    it("Should return all the addresses that hold tokens", async () => {
+      // ARRANGE
+      const signers = await ethers.getSigners();
+      const voters = signers.slice(1, 6);
+
+      // ACT
+      const res = await getShareHolders({ token });
+
+      // ASSERT
+      voters.forEach((voter) => {
+        const found = res.find((add) => add === voter.address);
+        expect(found).to.not.be.undefined;
+      });
     });
   });
 });
