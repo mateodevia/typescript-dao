@@ -36,50 +36,28 @@ const CustomTooltip = ({ active, payload }: any) => {
 
 const RADIAN = Math.PI / 180;
 const CustomLabel = (element: any) => {
-  const { cx, cy, midAngle, innerRadius, outerRadius, percent, index, name } =
-    element;
-  const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
+  const { cx, cy, midAngle, outerRadius } = element;
+  const radius = outerRadius * 0.5;
   const x = cx + radius * Math.cos(-midAngle * RADIAN) * 2.5;
   const y = cy + radius * Math.sin(-midAngle * RADIAN) * 2.5;
   return (
-    <foreignObject x={x - 20} y={y - 20} height="50" width="50">
-      <img
-        src={`data:image/png;base64,${new Identicon(
-          element.name,
-          30
-        ).toString()}`}
-        alt={element.name}
-        width="40px"
-        height="40px"
-        style={{ borderRadius: "50%" }}
-      />
-    </foreignObject>
-  );
-};
-
-const renderCustomizedLabel = ({
-  cx,
-  cy,
-  midAngle,
-  innerRadius,
-  outerRadius,
-  percent,
-  index,
-}: any) => {
-  const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
-  const x = cx + radius * Math.cos(-midAngle * RADIAN);
-  const y = cy + radius * Math.sin(-midAngle * RADIAN);
-
-  return (
-    <text
-      x={x}
-      y={y}
-      fill="white"
-      textAnchor={x > cx ? "start" : "end"}
-      dominantBaseline="central"
-    >
-      {`${(percent * 100).toFixed(0)}%`}
-    </text>
+    <g>
+      <text x={cx} y={cy} dy={8} textAnchor="middle" fill={colors.primary}>
+        Voting Power
+      </text>
+      <foreignObject x={x - 20} y={y - 20} height="50" width="50">
+        <img
+          src={`data:image/png;base64,${new Identicon(
+            element.name,
+            30
+          ).toString()}`}
+          alt={element.name}
+          width="40px"
+          height="40px"
+          style={{ borderRadius: "50%" }}
+        />
+      </foreignObject>
+    </g>
   );
 };
 
@@ -119,6 +97,7 @@ export function Voters() {
           data={chartData}
           cx="50%"
           cy="50%"
+          innerRadius={60}
           outerRadius={100}
           fill={colors.accent}
           labelLine={false}
