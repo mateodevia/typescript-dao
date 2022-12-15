@@ -40,7 +40,9 @@
     "@nomicfoundation/hardhat-network-helpers": "^1.0.6",
     "@nomiclabs/hardhat-ethers": "^2.1.1",
     "@openzeppelin/contracts": "^4.6.0",
+    "@types/recharts": "^1.8.24",
     "async": "^3.2.4",
-    "fs-extra": "^10.1.0"
+    "fs-extra": "^10.1.0",
+    "recharts": "^2.2.0"
   }
 }

@@ -2,10 +2,12 @@ import { combineReducers } from "redux";
 import { configureStore } from "@reduxjs/toolkit";
 import { proposalsReducer } from "./reducers/proposals";
 import { selectedAccountReducer } from "./reducers/selectedAccount";
+import { votersReducer } from "./reducers/voters";
 
 export const rootReducer = combineReducers({
   selectedAccount: selectedAccountReducer,
   proposals: proposalsReducer,
+  voters: votersReducer,
 });
 
 export const store = configureStore({

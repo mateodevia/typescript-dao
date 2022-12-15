@@ -6,7 +6,6 @@ import { proposalUpdate } from "../../reducers/proposals";
 import React from "react";
 import { EthersContext } from "../../App";
 import { ProposalListItem } from "./ProposalListItem/ProposalListItem";
-import Card from "@mui/material/Card";
 import { colors } from "../../styles/globals";
 
 export function ProposalList() {
@@ -36,18 +35,12 @@ export function ProposalList() {
 
   return (
     <>
-      <Card
-        sx={{
-          margin: "10vh 3vw",
-        }}
-      >
-        <h2 style={{ textAlign: "center", color: colors.primary }}>
-          Checkout the existing proposals
-        </h2>
-        {proposals.map((p, i) => (
-          <ProposalListItem key={i} proposal={p} />
-        ))}
-      </Card>
+      <h2 style={{ textAlign: "center", color: colors.primary }}>
+        Checkout the existing proposals
+      </h2>
+      {proposals.map((p, i) => (
+        <ProposalListItem key={i} proposal={p} />
+      ))}
     </>
   );
 }

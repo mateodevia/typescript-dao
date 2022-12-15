@@ -12,6 +12,8 @@ import { ethers } from "ethers";
 import { accentButton, colors } from "./styles/globals";
 import Container from "@mui/material/Container";
 import Button from "@mui/material/Button";
+import Card from "@mui/material/Card";
+import { Voters } from "./components/Voters/Voters";
 
 export const EthersContext = React.createContext<{
   contracts: IContracts | null;
@@ -88,12 +90,14 @@ function App() {
           >
             <div>
               <Header />
-              {/* <VoteButton
-            selectedAccount={selectedAccount}
-            proposalId={proposalId}
-            contracts={contracts}
-          /> */}
-              <ProposalList />
+              <Card
+                sx={{
+                  margin: "10vh 3vw",
+                }}
+              >
+                <Voters />
+                <ProposalList />
+              </Card>
             </div>
           </EthersContext.Provider>
         ) : (

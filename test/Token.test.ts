@@ -6,7 +6,7 @@ import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import Chance from "chance";
 import { Token } from "../typechain";
 import { deployFixture } from "./utils";
-import { getShareHolders } from "../scripts/api/users";
+import { getVoters } from "../scripts/api/voters";
 
 const chance = new Chance();
 
@@ -102,7 +102,7 @@ describe("Token Contract", () => {
       const voters = signers.slice(1, 6);
 
       // ACT
-      const res = await getShareHolders({ token });
+      const res = await getVoters({ token });
 
       // ASSERT
       voters.forEach((voter) => {
