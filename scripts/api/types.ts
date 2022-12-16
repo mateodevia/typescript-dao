@@ -33,3 +33,8 @@ export interface Proposal {
   payee: string;
   amount: string;
 }
+
+export interface Voter {
+  address: string;
+  tokens: string;
+}

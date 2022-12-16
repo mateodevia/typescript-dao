@@ -13,6 +13,11 @@ contract Token is ERC20Votes {
         _mint(msg.sender, _initialSupply);
     }
 
+    struct TokenHolder {
+        address addr;
+        uint256 tokens;
+    }
+
     // The functions below are overrides required by Solidity.
 
     function _afterTokenTransfer(
@@ -87,7 +92,16 @@ contract Token is ERC20Votes {
         return res;
     }
 
-    function getTokenHolders() public view returns (address[] memory) {
-        return tokenHolders;
+    function getTokenHolders() public view returns (TokenHolder[] memory) {
+        TokenHolder[] memory response = new TokenHolder[](tokenHolders.length);
+
+        for (uint256 i = 0; i < tokenHolders.length; i++) {
+            response[i] = TokenHolder(
+                tokenHolders[i],
+                balanceOf(tokenHolders[i])
+            );
+        }
+
+        return response;
     }
 }

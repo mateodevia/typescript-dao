@@ -96,7 +96,7 @@ describe("Token Contract", () => {
     });
   });
   describe("When queryng the share holders", () => {
-    it("Should return all the addresses that hold tokens", async () => {
+    it.only("Should return all the addresses that hold tokens", async () => {
       // ARRANGE
       const signers = await ethers.getSigners();
       const voters = signers.slice(1, 6);
@@ -106,8 +106,10 @@ describe("Token Contract", () => {
 
       // ASSERT
       voters.forEach((voter) => {
-        const found = res.find((add) => add === voter.address);
+        const found = res.find((v) => v.address === voter.address);
         expect(found).to.not.be.undefined;
+        expect(found!.address).to.be.equal(voter.address);
+        expect(found!.tokens).to.be.equal("200.0");
       });
     });
   });

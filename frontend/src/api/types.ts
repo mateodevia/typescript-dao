@@ -1,5 +1,3 @@
-// eslint-disable-next-line node/no-unpublished-import
-
 /* eslint-disable no-unused-vars */
 export enum ProposalStates {
   Pending = 0,
@@ -32,4 +30,9 @@ export interface Proposal {
   };
   payee: string;
   amount: string;
+}
+
+export interface Voter {
+  address: string;
+  tokens: string;
 }
