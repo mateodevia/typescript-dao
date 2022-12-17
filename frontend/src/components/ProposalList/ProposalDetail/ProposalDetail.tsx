@@ -12,17 +12,10 @@ import Button from "@mui/material/Button";
 import { voteForProposal } from "../../../api/proposal";
 import React from "react";
 import { EthersContext } from "../../../App";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-} from "recharts";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../store";
+import { VotingResultsList } from "./VotingResults/VotingResults";
+import { VotingButtons } from "./VotingButtons/VotingButtons";
 
 export function ProposalDetail(props: { proposal: Proposal | null }) {
   const { contracts } = React.useContext(EthersContext);
@@ -85,96 +78,15 @@ export function ProposalDetail(props: { proposal: Proposal | null }) {
             marginBottom: "20px",
           }}
         >
-          <BarChart
-            width={500}
-            height={300}
-            data={[
-              {
-                name: "Votes",
-                "In favor": Number(props.proposal.votes.forVotes),
-                Against: Number(props.proposal.votes.againstVotes),
-                Abstain: Number(props.proposal.votes.abstainVotes),
-              },
-            ]}
-            margin={{
-              top: 5,
-              right: 30,
-              left: 20,
-              bottom: 5,
-            }}
-          >
-            <Legend />
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="name" />
-            <YAxis />
-            <Tooltip />
-            <Bar
-              dataKey="In favor"
-              fill={votingOptionsColorsMap[VotingOptions.InFavor]}
-            />
-            <Bar
-              dataKey="Against"
-              fill={votingOptionsColorsMap[VotingOptions.Against]}
-            />
-            <Bar
-              dataKey="Abstain"
-              fill={votingOptionsColorsMap[VotingOptions.Abstain]}
-            />
-          </BarChart>
+          <VotingResultsList proposal={props.proposal} />
         </div>
+        {/* Only show voting options if the selectedAcount is a voter and the proposal is pending */}
         {voters.some(
           (v) => v.address.toLowerCase() === selectedAccount.toLowerCase()
-        ) && props.proposal.state === ProposalStates.Pending ? (
-          <div style={{ margin: "0 auto", width: "max-content" }}>
-            <Button
-              onClick={() => handleVote(VotingOptions.InFavor)}
-              variant="contained"
-              sx={{
-                ...globalButton,
-                backgroundColor: votingOptionsColorsMap[VotingOptions.InFavor],
-                "&:hover": {
-                  backgroundColor:
-                    votingOptionsColorsMap[VotingOptions.InFavor],
-                },
-                marginBottom: "20px",
-              }}
-            >
-              Vote in favor
-            </Button>
-            <Button
-              onClick={() => handleVote(VotingOptions.Against)}
-              variant="contained"
-              sx={{
-                ...globalButton,
-                backgroundColor: votingOptionsColorsMap[VotingOptions.Against],
-                "&:hover": {
-                  backgroundColor:
-                    votingOptionsColorsMap[VotingOptions.Against],
-                },
-                marginBottom: "20px",
-              }}
-            >
-              Vote in againts
-            </Button>
-            <Button
-              onClick={() => handleVote(VotingOptions.Abstain)}
-              variant="contained"
-              sx={{
-                ...globalButton,
-                backgroundColor: votingOptionsColorsMap[VotingOptions.Abstain],
-                "&:hover": {
-                  backgroundColor:
-                    votingOptionsColorsMap[VotingOptions.Abstain],
-                },
-                marginBottom: "20px",
-              }}
-            >
-              Abstain
-            </Button>
-          </div>
-        ) : (
-          <></>
-        )}
+        ) &&
+          props.proposal.state === ProposalStates.Pending && (
+            <VotingButtons handleVote={handleVote} />
+          )}
       </div>
     </>
   );
