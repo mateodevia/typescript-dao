@@ -64,9 +64,13 @@ describe("Treasury Contract", () => {
       }
     );
     await moveBlocks(votingDelay);
-    await voteForProposal(excecutedProposal.proposalId, VotingOptions.InFavor, {
-      governor: governor.connect(voter1),
-    });
+    await voteForProposal(
+      excecutedProposal.proposalId.toString(),
+      VotingOptions.InFavor,
+      {
+        governor: governor.connect(voter1),
+      }
+    );
     await moveBlocks(votingPeriod);
     await queueProposal(
       excecutedDescription,

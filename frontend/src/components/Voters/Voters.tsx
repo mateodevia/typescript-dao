@@ -87,7 +87,10 @@ export function Voters() {
             alt={element.name}
             width="40px"
             height="40px"
-            style={{ borderRadius: "50%" }}
+            style={{
+              borderRadius: "50%",
+              border: `solid 3px ${colors.primary}`,
+            }}
           />
         </foreignObject>
       </g>

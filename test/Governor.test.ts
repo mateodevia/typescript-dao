@@ -142,7 +142,7 @@ describe("Governor Contract", () => {
       );
 
       // ACT
-      const transaction = voteForProposal(proposalId, 1, {
+      const transaction = voteForProposal(proposalId.toString(), 1, {
         governor: governor.connect(voter1),
       });
 
@@ -164,7 +164,7 @@ describe("Governor Contract", () => {
       await moveBlocks(votingDelay + votingPeriod + 1);
 
       // ACT
-      const transaction = voteForProposal(proposalId, 1, {
+      const transaction = voteForProposal(proposalId.toString(), 1, {
         governor: governor.connect(voter1),
       });
 
@@ -172,7 +172,7 @@ describe("Governor Contract", () => {
       await expect(transaction).to.be.reverted;
     });
     describe("When all voters have the same amount of tokens (voting power)", () => {
-      it("When the mayority of votes are in favor of the proposal, the proposal should be successful", async () => {
+      it.only("When the mayority of votes are in favor of the proposal, the proposal should be successful", async () => {
         // ARRANGE
         const [deployer, voter1, voter2, voter3, voter4, voter5] =
           await ethers.getSigners();
@@ -188,19 +188,20 @@ describe("Governor Contract", () => {
         await moveBlocks(votingDelay);
 
         // ACT
-        await voteForProposal(proposalId, VotingOptions.InFavor, {
+        console.log(await governor.state(proposalId));
+        await voteForProposal(proposalId.toString(), VotingOptions.InFavor, {
           governor: governor.connect(voter1),
         });
-        await voteForProposal(proposalId, VotingOptions.InFavor, {
+        await voteForProposal(proposalId.toString(), VotingOptions.InFavor, {
           governor: governor.connect(voter2),
         });
-        await voteForProposal(proposalId, VotingOptions.InFavor, {
+        await voteForProposal(proposalId.toString(), VotingOptions.InFavor, {
           governor: governor.connect(voter3),
         });
-        await voteForProposal(proposalId, VotingOptions.InFavor, {
+        await voteForProposal(proposalId.toString(), VotingOptions.InFavor, {
           governor: governor.connect(voter4),
         });
-        await voteForProposal(proposalId, VotingOptions.Against, {
+        await voteForProposal(proposalId.toString(), VotingOptions.Against, {
           governor: governor.connect(voter5),
         });
         await moveBlocks(votingPeriod);
@@ -225,19 +226,19 @@ describe("Governor Contract", () => {
         await moveBlocks(votingDelay);
 
         // ACT
-        await voteForProposal(proposalId, VotingOptions.Against, {
+        await voteForProposal(proposalId.toString(), VotingOptions.Against, {
           governor: governor.connect(voter1),
         });
-        await voteForProposal(proposalId, VotingOptions.Against, {
+        await voteForProposal(proposalId.toString(), VotingOptions.Against, {
           governor: governor.connect(voter2),
         });
-        await voteForProposal(proposalId, VotingOptions.Against, {
+        await voteForProposal(proposalId.toString(), VotingOptions.Against, {
           governor: governor.connect(voter3),
         });
-        await voteForProposal(proposalId, VotingOptions.Against, {
+        await voteForProposal(proposalId.toString(), VotingOptions.Against, {
           governor: governor.connect(voter4),
         });
-        await voteForProposal(proposalId, VotingOptions.InFavor, {
+        await voteForProposal(proposalId.toString(), VotingOptions.InFavor, {
           governor: governor.connect(voter5),
         });
         await moveBlocks(votingPeriod);
@@ -262,19 +263,19 @@ describe("Governor Contract", () => {
         await moveBlocks(votingDelay);
 
         // ACT
-        await voteForProposal(proposalId, VotingOptions.Abstain, {
+        await voteForProposal(proposalId.toString(), VotingOptions.Abstain, {
           governor: governor.connect(voter1),
         });
-        await voteForProposal(proposalId, VotingOptions.Abstain, {
+        await voteForProposal(proposalId.toString(), VotingOptions.Abstain, {
           governor: governor.connect(voter2),
         });
-        await voteForProposal(proposalId, VotingOptions.Abstain, {
+        await voteForProposal(proposalId.toString(), VotingOptions.Abstain, {
           governor: governor.connect(voter3),
         });
-        await voteForProposal(proposalId, VotingOptions.Abstain, {
+        await voteForProposal(proposalId.toString(), VotingOptions.Abstain, {
           governor: governor.connect(voter4),
         });
-        await voteForProposal(proposalId, VotingOptions.Abstain, {
+        await voteForProposal(proposalId.toString(), VotingOptions.Abstain, {
           governor: governor.connect(voter5),
         });
         await moveBlocks(votingPeriod);
@@ -317,13 +318,13 @@ describe("Governor Contract", () => {
       await moveBlocks(votingDelay);
 
       // ACT
-      await voteForProposal(proposalId, VotingOptions.InFavor, {
+      await voteForProposal(proposalId.toString(), VotingOptions.InFavor, {
         governor: governor.connect(voter1),
       });
-      await voteForProposal(proposalId, VotingOptions.InFavor, {
+      await voteForProposal(proposalId.toString(), VotingOptions.InFavor, {
         governor: governor.connect(voter2),
       });
-      await voteForProposal(proposalId, VotingOptions.Against, {
+      await voteForProposal(proposalId.toString(), VotingOptions.Against, {
         governor: governor.connect(voter5),
       });
       await moveBlocks(votingPeriod);
@@ -378,7 +379,7 @@ describe("Governor Contract", () => {
       await moveBlocks(votingDelay);
 
       // ACT
-      await voteForProposal(proposalId, VotingOptions.InFavor, {
+      await voteForProposal(proposalId.toString(), VotingOptions.InFavor, {
         governor: governor.connect(voter1),
       });
       await moveBlocks(votingPeriod);
@@ -426,15 +427,27 @@ describe("Governor Contract", () => {
       // Make the 3 prposals successful
       await moveBlocks(votingDelay);
       await Promise.all([
-        voteForProposal(proposal1.proposalId, VotingOptions.InFavor, {
-          governor: governor.connect(voter1),
-        }),
-        voteForProposal(proposal2.proposalId, VotingOptions.InFavor, {
-          governor: governor.connect(voter1),
-        }),
-        voteForProposal(proposal3.proposalId, VotingOptions.InFavor, {
-          governor: governor.connect(voter1),
-        }),
+        voteForProposal(
+          proposal1.proposalId.toString(),
+          VotingOptions.InFavor,
+          {
+            governor: governor.connect(voter1),
+          }
+        ),
+        voteForProposal(
+          proposal2.proposalId.toString(),
+          VotingOptions.InFavor,
+          {
+            governor: governor.connect(voter1),
+          }
+        ),
+        voteForProposal(
+          proposal3.proposalId.toString(),
+          VotingOptions.InFavor,
+          {
+            governor: governor.connect(voter1),
+          }
+        ),
       ]);
       await moveBlocks(votingPeriod);
 
@@ -493,15 +506,27 @@ describe("Governor Contract", () => {
       // Make the 3 prposals successful
       await moveBlocks(votingDelay);
       await Promise.all([
-        voteForProposal(proposal1.proposalId, VotingOptions.InFavor, {
-          governor: governor.connect(voter1),
-        }),
-        voteForProposal(proposal2.proposalId, VotingOptions.InFavor, {
-          governor: governor.connect(voter1),
-        }),
-        voteForProposal(proposal3.proposalId, VotingOptions.InFavor, {
-          governor: governor.connect(voter1),
-        }),
+        voteForProposal(
+          proposal1.proposalId.toString(),
+          VotingOptions.InFavor,
+          {
+            governor: governor.connect(voter1),
+          }
+        ),
+        voteForProposal(
+          proposal2.proposalId.toString(),
+          VotingOptions.InFavor,
+          {
+            governor: governor.connect(voter1),
+          }
+        ),
+        voteForProposal(
+          proposal3.proposalId.toString(),
+          VotingOptions.InFavor,
+          {
+            governor: governor.connect(voter1),
+          }
+        ),
       ]);
       await moveBlocks(votingPeriod);
 
@@ -581,7 +606,7 @@ describe("Governor Contract", () => {
       );
       await moveBlocks(votingDelay);
       await voteForProposal(
-        excecutedProposal.proposalId,
+        excecutedProposal.proposalId.toString(),
         VotingOptions.InFavor,
         {
           governor: governor.connect(voter1),
@@ -620,7 +645,7 @@ describe("Governor Contract", () => {
       );
       await moveBlocks(votingDelay);
       await voteForProposal(
-        approvedProposal.proposalId,
+        approvedProposal.proposalId.toString(),
         VotingOptions.InFavor,
         {
           governor: governor.connect(voter1),
@@ -640,9 +665,13 @@ describe("Governor Contract", () => {
         }
       );
       await moveBlocks(votingDelay);
-      await voteForProposal(queuedProposal.proposalId, VotingOptions.InFavor, {
-        governor: governor.connect(voter1),
-      });
+      await voteForProposal(
+        queuedProposal.proposalId.toString(),
+        VotingOptions.InFavor,
+        {
+          governor: governor.connect(voter1),
+        }
+      );
       await moveBlocks(votingPeriod);
       await queueProposal(queuedDescription, queuedProposal.encodedFunction, {
         governor: governor.connect(voter1),
@@ -662,9 +691,13 @@ describe("Governor Contract", () => {
         }
       );
       await moveBlocks(votingDelay);
-      await voteForProposal(failedProposal.proposalId, VotingOptions.Against, {
-        governor: governor.connect(voter1),
-      });
+      await voteForProposal(
+        failedProposal.proposalId.toString(),
+        VotingOptions.Against,
+        {
+          governor: governor.connect(voter1),
+        }
+      );
       await moveBlocks(votingPeriod);
 
       // Create a proposal and start its voting period
@@ -711,7 +744,7 @@ describe("Governor Contract", () => {
       const excecuted = proposals.find(
         (proposal) => proposal.state === ProposalStates.Executed
       );
-      expect(excecuted?.id).equals(excecutedProposal.proposalId);
+      expect(excecuted?.id).equals(excecutedProposal.proposalId.toString());
       expect(excecuted?.proposer).equals(voter1.address);
       expect(excecuted?.description).equals("Should be excecuted");
       expect(excecuted?.payee).equals(otherAddress.address);
@@ -720,7 +753,7 @@ describe("Governor Contract", () => {
       const approved = proposals.find(
         (proposal) => proposal.state === ProposalStates.Succeeded
       );
-      expect(approved?.id).equals(approvedProposal.proposalId);
+      expect(approved?.id).equals(approvedProposal.proposalId.toString());
       expect(approved?.proposer).equals(voter1.address);
       expect(approved?.description).equals("Should be approved");
       expect(approved?.payee).equals(otherAddress.address);
@@ -729,7 +762,7 @@ describe("Governor Contract", () => {
       const voting = proposals.find(
         (proposal) => proposal.state === ProposalStates.Pending
       );
-      expect(voting?.id).equals(votingProposal.proposalId);
+      expect(voting?.id).equals(votingProposal.proposalId.toString());
       expect(voting?.proposer).equals(voter1.address);
       expect(voting?.description).equals("Should be pending");
       expect(voting?.payee).equals(otherAddress.address);
@@ -738,7 +771,7 @@ describe("Governor Contract", () => {
       const queued = proposals.find(
         (proposal) => proposal.state === ProposalStates.Queued
       );
-      expect(queued?.id).equals(queuedProposal.proposalId);
+      expect(queued?.id).equals(queuedProposal.proposalId.toString());
       expect(queued?.proposer).equals(voter1.address);
       expect(queued?.description).equals("Should be queued");
       expect(queued?.payee).equals(otherAddress.address);
@@ -747,7 +780,7 @@ describe("Governor Contract", () => {
       const failed = proposals.find(
         (proposal) => proposal.state === ProposalStates.Defeated
       );
-      expect(failed?.id).equals(failedProposal.proposalId);
+      expect(failed?.id).equals(failedProposal.proposalId.toString());
       expect(failed?.proposer).equals(voter1.address);
       expect(failed?.description).equals("Should be defeated");
       expect(failed?.payee).equals(otherAddress.address);

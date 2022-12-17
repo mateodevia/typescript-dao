@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { getProposals } from "../../api/proposal";
 import { AppDispatch, RootState } from "../../store";
 import { useDispatch, useSelector } from "react-redux";
@@ -7,11 +7,18 @@ import React from "react";
 import { EthersContext } from "../../App";
 import { ProposalListItem } from "./ProposalListItem/ProposalListItem";
 import { colors } from "../../styles/globals";
+import { Proposal } from "../../api/types";
+import Dialog from "@mui/material/Dialog";
+import { ProposalDetail } from "./ProposalDetail/ProposalDetail";
 
 export function ProposalList() {
   const { contracts, provider } = React.useContext(EthersContext);
+
   const proposals = useSelector((state: RootState) => state.proposals);
   const dispatch: AppDispatch = useDispatch();
+
+  const [proposalDialog, setProposalDialog] = useState<boolean>(false);
+  const [selectedProposal, setSelectedProposal] = useState<number>(-1);
 
   useEffect(() => {
     fetchProposals();
@@ -27,19 +34,48 @@ export function ProposalList() {
   };
 
   const suscribeToProposals = async () => {
-    const filters = await contracts.governor.filters.ProposalCreated();
-    provider.on(filters, () => {
+    // When a proposal is created
+    const proposalCreated = await contracts.governor.filters.ProposalCreated();
+    provider.on(proposalCreated, () => {
+      fetchProposals();
+    });
+
+    // When a vote is cast
+    const voteCast = await contracts.governor.filters.VoteCast();
+    provider.on(voteCast, () => {
       fetchProposals();
     });
   };
 
+  const handleProposalSelected = (proposalIndex: number) => {
+    setSelectedProposal(proposalIndex);
+    setProposalDialog(true);
+  };
+
+  const handleProposalDialogClosed = () => {
+    setSelectedProposal(-1);
+    setProposalDialog(false);
+  };
+
   return (
     <>
+      <Dialog
+        maxWidth={false}
+        onClose={() => handleProposalDialogClosed()}
+        open={proposalDialog}
+      >
+        <ProposalDetail proposal={proposals[selectedProposal]} />
+      </Dialog>
       <h2 style={{ textAlign: "center", color: colors.primary }}>
         Checkout the existing proposals
       </h2>
       {proposals.map((p, i) => (
-        <ProposalListItem key={i} proposal={p} />
+        <ProposalListItem
+          key={i}
+          index={i}
+          proposal={p}
+          handleProposalSelected={handleProposalSelected}
+        />
       ))}
     </>
   );

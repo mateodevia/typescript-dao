@@ -54,7 +54,7 @@ export const proposeReleaseFundsToPayee = async (
  * @param contracts.governor The governor contract
  */
 export const voteForProposal = async (
-  proposalId: BigNumber,
+  proposalId: string,
   vote: number,
   contracts: {
     governor: MyGovernor;
