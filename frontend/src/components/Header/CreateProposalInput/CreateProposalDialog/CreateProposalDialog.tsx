@@ -6,6 +6,8 @@ import { proposeReleaseFundsToPayee } from "../../../../api/proposal";
 import { EthersContext } from "../../../../App";
 import { useForm } from "react-hook-form";
 import { accentButton, colors } from "../../../../styles/globals";
+import { toast } from "react-toastify";
+import { apiWrapper } from "../../../../utils/apiWrapper";
 
 interface CreateProposalDialogForm {
   proposalDescription: string;
@@ -37,11 +39,14 @@ export function CreateProposalDialog(props: {
   if (!contracts || !props.payee || !props.amount) return <div></div>;
 
   const createProposal = async (formData: CreateProposalDialogForm) => {
-    const { proposalId } = await proposeReleaseFundsToPayee(
-      props.payee!,
-      props.amount!,
-      formData.proposalDescription,
-      contracts
+    const { proposalId } = await apiWrapper(
+      async () =>
+        await proposeReleaseFundsToPayee(
+          props.payee!,
+          props.amount!,
+          formData.proposalDescription,
+          contracts
+        )
     );
     console.log("Created proposal", proposalId);
     props.onSuccess();

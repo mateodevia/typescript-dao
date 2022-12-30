@@ -14,6 +14,8 @@ import Container from "@mui/material/Container";
 import Button from "@mui/material/Button";
 import Card from "@mui/material/Card";
 import { Voters } from "./components/Voters/Voters";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export const EthersContext = React.createContext<{
   contracts: IContracts | null;
@@ -125,6 +127,7 @@ function App() {
           </Container>
         )}
       </div>
+      <ToastContainer />
     </>
   );
 }
