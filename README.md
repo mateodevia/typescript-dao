@@ -13,6 +13,9 @@ TODO
 
 You can try the app [__right here__](https://github.com/mateodevia)
 
+# About the proyect
+TODO
+
 # Architecture and Design
 TODO
 
