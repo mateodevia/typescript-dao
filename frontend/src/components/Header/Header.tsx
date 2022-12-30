@@ -1,23 +1,23 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import Container from "@mui/material/Container";
-import TextField from "@mui/material/TextField";
 import { CreateProposalInput } from "./CreateProposalInput/CreateProposalInput";
 import { EthersContext } from "../../App";
-import { BigNumber, ethers } from "ethers";
 import { accentButton, colors } from "../../styles/globals";
 import Button from "@mui/material/Button";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "../../store";
 import { selectedAccountUpdate } from "../../reducers/selectedAccount";
 import { getTreasuryBalance } from "../../api/treasury";
+import { treasuryBalanceUpdate } from "../../reducers/treasuryBalance";
 
 export function Header() {
   const { contracts, provider } = React.useContext(EthersContext);
 
-  const [treasuryBalance, setTreasuryBalance] = useState<string | null>(null);
-
   const selectedAccount = useSelector(
     (state: RootState) => state.selectedAccount
+  );
+  const treasuryBalance = useSelector(
+    (state: RootState) => state.treasuryBalance
   );
   const dispatch: AppDispatch = useDispatch();
 
@@ -30,18 +30,34 @@ export function Header() {
 
   const fetchTreasuryBalance = async () => {
     const balance = await getTreasuryBalance(provider, contracts);
-    setTreasuryBalance(balance);
+    dispatch(treasuryBalanceUpdate(balance));
   };
 
   const connectToWallet = async () => {
     const [account] = await provider.send("eth_requestAccounts", []);
     dispatch(selectedAccountUpdate(account));
-    console.log("Connecetd to wallet", account);
+    console.log("Connected to wallet", account);
   };
 
   const renderContent = () => {
     if (selectedAccount !== null) {
-      return <CreateProposalInput />;
+      if (Number(treasuryBalance) > 0) {
+        return <CreateProposalInput />;
+      } else {
+        return (
+          <Container
+            maxWidth="md"
+            sx={{
+              textAlign: "center",
+            }}
+          >
+            <h3 style={{ color: "white" }}>
+              Oops! The treasure has now remaining funds. Checkout the proposals
+              that where executed below.
+            </h3>
+          </Container>
+        );
+      }
     } else {
       return (
         <Container

@@ -2,12 +2,8 @@ import { Proposal, ProposalStates, VotingOptions } from "../../../api/types";
 import CardHeader from "@mui/material/CardHeader";
 import Avatar from "@mui/material/Avatar";
 import Identicon from "identicon.js";
-import {
-  stateNamesMap,
-  statesColorsMap,
-  votingOptionsColorsMap,
-} from "../../../types/constants";
-import { accentButton, colors, globalButton } from "../../../styles/globals";
+import { stateNamesMap, statesColorsMap } from "../../../types/constants";
+import { accentButton, colors } from "../../../styles/globals";
 import Button from "@mui/material/Button";
 import {
   excecuteProposal,

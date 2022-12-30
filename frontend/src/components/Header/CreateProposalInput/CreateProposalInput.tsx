@@ -9,6 +9,8 @@ import { accentButton, colors } from "../../../styles/globals";
 import { useForm } from "react-hook-form";
 import Dialog from "@mui/material/Dialog";
 import { CreateProposalDialog } from "./CreateProposalDialog/CreateProposalDIalog";
+import { RootState } from "../../../store";
+import { useSelector } from "react-redux";
 
 interface CreateProposalForm {
   proposalPayee: string;
@@ -17,6 +19,10 @@ interface CreateProposalForm {
 
 export function CreateProposalInput() {
   const { contracts } = React.useContext(EthersContext);
+
+  const treasuryBalance = useSelector(
+    (state: RootState) => state.treasuryBalance
+  );
 
   const [createDialog, setCreateDialog] = useState<boolean>(false);
   const [payee, setPayee] = useState<string | null>(null);
@@ -37,6 +43,8 @@ export function CreateProposalInput() {
   });
   const { ref: amountRef, ...amountProps } = register("proposalAmount", {
     required: true,
+    min: 0,
+    max: Number(treasuryBalance),
   });
 
   // Null safety if ethers context is not is not available
@@ -120,7 +128,7 @@ export function CreateProposalInput() {
               margin: "4px 16px",
               padding: "4px",
             }}
-            helperText={!!errors.proposalAmount ? "invalid address" : undefined}
+            helperText={!!errors.proposalAmount ? "invalid amount" : undefined}
             error={!!errors.proposalAmount}
           />
           <Button

@@ -7,9 +7,10 @@ import React from "react";
 import { EthersContext } from "../../App";
 import { ProposalListItem } from "./ProposalListItem/ProposalListItem";
 import { colors } from "../../styles/globals";
-import { Proposal } from "../../api/types";
 import Dialog from "@mui/material/Dialog";
 import { ProposalDetail } from "./ProposalDetail/ProposalDetail";
+import { getTreasuryBalance } from "../../api/treasury";
+import { treasuryBalanceUpdate } from "../../reducers/treasuryBalance";
 
 export function ProposalList() {
   const { contracts, provider } = React.useContext(EthersContext);
@@ -31,6 +32,11 @@ export function ProposalList() {
   const fetchProposals = async () => {
     const proposals = await getProposals(contracts);
     dispatch(proposalUpdate(proposals.reverse()));
+  };
+
+  const fetchTreasuryBalance = async () => {
+    const balance = await getTreasuryBalance(provider, contracts);
+    dispatch(treasuryBalanceUpdate(balance));
   };
 
   const suscribeToProposals = async () => {
@@ -57,6 +63,7 @@ export function ProposalList() {
       await contracts.governor.filters.ProposalExecuted();
     provider.on(ProposalExecuted, () => {
       fetchProposals();
+      fetchTreasuryBalance();
     });
 
     // When a proposal is canceled
