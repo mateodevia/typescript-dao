@@ -16,6 +16,7 @@ import Card from "@mui/material/Card";
 import { Voters } from "./components/Voters/Voters";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { Footer } from "./components/Footer/Footer";
 
 export const EthersContext = React.createContext<{
   contracts: IContracts | null;
@@ -94,7 +95,7 @@ function App() {
               <Header />
               <Card
                 sx={{
-                  margin: "10vh 3vw",
+                  margin: "10vh 3vw 0 3vw",
                 }}
               >
                 <Voters />
@@ -127,6 +128,7 @@ function App() {
           </Container>
         )}
       </div>
+      <Footer />
       <ToastContainer />
     </>
   );
