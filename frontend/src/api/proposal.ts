@@ -74,19 +74,22 @@ export const voteForProposal = async (
  * @param contracts.governor The governor contract
  */
 export const queueProposal = async (
-  proposalDescription: string,
-  encodedFunction: string,
+  proposal: Proposal,
   contracts: {
     governor: MyGovernor;
     treasury: Treasury;
   }
 ): Promise<void> => {
+  const encodedFunction = contracts.treasury.interface.encodeFunctionData(
+    "releaseFunds",
+    [proposal.payee, ethers.utils.parseEther(proposal.amount.toString())]
+  );
   // Queue the approved proposal
   const queueTx = await contracts.governor.queue(
     [contracts.treasury.address],
     [0],
     [encodedFunction],
-    ethers.utils.id(proposalDescription)
+    ethers.utils.id(proposal.description)
   );
   await queueTx.wait(1);
 };

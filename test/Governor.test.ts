@@ -18,6 +18,7 @@ import Chance from "chance";
 import { MyGovernor, Token, Treasury } from "../typechain";
 import { deployFixture } from "./utils";
 import { BigNumberish } from "ethers";
+import { ProposalFactory } from "./factories/ProposalFactory";
 
 const chance = new Chance();
 
@@ -172,7 +173,7 @@ describe("Governor Contract", () => {
       await expect(transaction).to.be.reverted;
     });
     describe("When all voters have the same amount of tokens (voting power)", () => {
-      it.only("When the mayority of votes are in favor of the proposal, the proposal should be successful", async () => {
+      it("When the mayority of votes are in favor of the proposal, the proposal should be successful", async () => {
         // ARRANGE
         const [deployer, voter1, voter2, voter3, voter4, voter5] =
           await ethers.getSigners();
@@ -454,20 +455,41 @@ describe("Governor Contract", () => {
       // ACT
       await Promise.all([
         // Should allow deployer to enqueue a proposal
-        queueProposal(description1, proposal1.encodedFunction, {
-          governor: governor.connect(deployer),
-          treasury: treasury.connect(deployer),
-        }),
+        queueProposal(
+          ProposalFactory({
+            description: description1,
+            payee: otherAddress.address,
+            amount: "10",
+          }),
+          {
+            governor: governor.connect(deployer),
+            treasury: treasury.connect(deployer),
+          }
+        ),
         // Should allow voter to enqueue a proposal
-        queueProposal(description2, proposal2.encodedFunction, {
-          governor: governor.connect(voter1),
-          treasury: treasury.connect(voter1),
-        }),
+        queueProposal(
+          ProposalFactory({
+            description: description2,
+            payee: otherAddress.address,
+            amount: "10",
+          }),
+          {
+            governor: governor.connect(voter1),
+            treasury: treasury.connect(voter1),
+          }
+        ),
         // Should allow an address without tokens to enqueue a proposal
-        queueProposal(description3, proposal3.encodedFunction, {
-          governor: governor.connect(otherAddress),
-          treasury: treasury.connect(otherAddress),
-        }),
+        queueProposal(
+          ProposalFactory({
+            description: description3,
+            payee: otherAddress.address,
+            amount: "10",
+          }),
+          {
+            governor: governor.connect(otherAddress),
+            treasury: treasury.connect(otherAddress),
+          }
+        ),
       ]);
 
       // ASSERT
@@ -533,20 +555,41 @@ describe("Governor Contract", () => {
       // Enqueue the proposals
       await Promise.all([
         // Should allow deployer to enqueue a proposal
-        queueProposal(description1, proposal1.encodedFunction, {
-          governor: governor.connect(deployer),
-          treasury: treasury.connect(deployer),
-        }),
+        queueProposal(
+          ProposalFactory({
+            description: description1,
+            payee: otherAddress.address,
+            amount: "10",
+          }),
+          {
+            governor: governor.connect(deployer),
+            treasury: treasury.connect(deployer),
+          }
+        ),
         // Should allow voter to enqueue a proposal
-        queueProposal(description2, proposal2.encodedFunction, {
-          governor: governor.connect(voter1),
-          treasury: treasury.connect(voter1),
-        }),
+        queueProposal(
+          ProposalFactory({
+            description: description2,
+            payee: otherAddress.address,
+            amount: "10",
+          }),
+          {
+            governor: governor.connect(voter1),
+            treasury: treasury.connect(voter1),
+          }
+        ),
         // Should allow an address without tokens to enqueue a proposal
-        queueProposal(description3, proposal3.encodedFunction, {
-          governor: governor.connect(otherAddress),
-          treasury: treasury.connect(otherAddress),
-        }),
+        queueProposal(
+          ProposalFactory({
+            description: description3,
+            payee: otherAddress.address,
+            amount: "10",
+          }),
+          {
+            governor: governor.connect(otherAddress),
+            treasury: treasury.connect(otherAddress),
+          }
+        ),
       ]);
       await moveTime(minDelay + 1);
       await moveBlocks(1);
@@ -614,8 +657,11 @@ describe("Governor Contract", () => {
       );
       await moveBlocks(votingPeriod);
       await queueProposal(
-        excecutedDescription,
-        excecutedProposal.encodedFunction,
+        ProposalFactory({
+          description: excecutedDescription,
+          payee: otherAddress.address,
+          amount: "10",
+        }),
         {
           governor: governor.connect(voter1),
           treasury: treasury.connect(voter1),
@@ -673,10 +719,17 @@ describe("Governor Contract", () => {
         }
       );
       await moveBlocks(votingPeriod);
-      await queueProposal(queuedDescription, queuedProposal.encodedFunction, {
-        governor: governor.connect(voter1),
-        treasury: treasury.connect(voter1),
-      });
+      await queueProposal(
+        ProposalFactory({
+          description: queuedDescription,
+          payee: otherAddress.address,
+          amount: "10",
+        }),
+        {
+          governor: governor.connect(voter1),
+          treasury: treasury.connect(voter1),
+        }
+      );
 
       // Create and vote against a proposal
 

@@ -7,9 +7,9 @@ import {
   statesColorsMap,
   votingOptionsColorsMap,
 } from "../../../types/constants";
-import { colors, globalButton } from "../../../styles/globals";
+import { accentButton, colors, globalButton } from "../../../styles/globals";
 import Button from "@mui/material/Button";
-import { voteForProposal } from "../../../api/proposal";
+import { queueProposal, voteForProposal } from "../../../api/proposal";
 import React from "react";
 import { EthersContext } from "../../../App";
 import { useSelector } from "react-redux";
@@ -30,6 +30,12 @@ export function ProposalDetail(props: { proposal: Proposal | null }) {
   const handleVote = (vote: VotingOptions) => {
     if (props.proposal !== null) {
       voteForProposal(props.proposal.id, vote, contracts);
+    }
+  };
+
+  const handleEnqueue = () => {
+    if (props.proposal !== null) {
+      queueProposal(props.proposal, contracts);
     }
   };
 
@@ -80,13 +86,28 @@ export function ProposalDetail(props: { proposal: Proposal | null }) {
         >
           <VotingResultsList proposal={props.proposal} />
         </div>
-        {/* Only show voting options if the selectedAcount is a voter and the proposal is pending */}
+        {/* Only show voting options if the selectedAccount is a voter and the proposal is pending */}
         {voters.some(
           (v) => v.address.toLowerCase() === selectedAccount.toLowerCase()
         ) &&
           props.proposal.state === ProposalStates.Pending && (
             <VotingButtons handleVote={handleVote} />
           )}
+        {/* Only show queue button if the proposal is active */}
+        {props.proposal.state === ProposalStates.Active && (
+          <div style={{ margin: "0 auto", width: "max-content" }}>
+            <Button
+              onClick={() => handleEnqueue()}
+              variant="contained"
+              sx={{
+                ...accentButton,
+                marginBottom: "20px",
+              }}
+            >
+              Enqueue this proposal
+            </Button>
+          </div>
+        )}
       </div>
     </>
   );
