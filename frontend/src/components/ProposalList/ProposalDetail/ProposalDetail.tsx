@@ -9,7 +9,11 @@ import {
 } from "../../../types/constants";
 import { accentButton, colors, globalButton } from "../../../styles/globals";
 import Button from "@mui/material/Button";
-import { queueProposal, voteForProposal } from "../../../api/proposal";
+import {
+  excecuteProposal,
+  queueProposal,
+  voteForProposal,
+} from "../../../api/proposal";
 import React from "react";
 import { EthersContext } from "../../../App";
 import { useSelector } from "react-redux";
@@ -36,6 +40,12 @@ export function ProposalDetail(props: { proposal: Proposal | null }) {
   const handleEnqueue = () => {
     if (props.proposal !== null) {
       queueProposal(props.proposal, contracts);
+    }
+  };
+
+  const handleExcecute = () => {
+    if (props.proposal !== null) {
+      excecuteProposal(props.proposal, contracts);
     }
   };
 
@@ -105,6 +115,21 @@ export function ProposalDetail(props: { proposal: Proposal | null }) {
               }}
             >
               Enqueue this proposal
+            </Button>
+          </div>
+        )}
+        {/* Only show excecute button if the proposal is queued */}
+        {props.proposal.state === ProposalStates.Queued && (
+          <div style={{ margin: "0 auto", width: "max-content" }}>
+            <Button
+              onClick={() => handleExcecute()}
+              variant="contained"
+              sx={{
+                ...accentButton,
+                marginBottom: "20px",
+              }}
+            >
+              Execute this proposal
             </Button>
           </div>
         )}

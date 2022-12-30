@@ -596,18 +596,39 @@ describe("Governor Contract", () => {
 
       // ACT
       await Promise.all([
-        excecuteProposal(description1, proposal1.encodedFunction, {
-          governor: governor.connect(deployer),
-          treasury: treasury.connect(deployer),
-        }),
-        excecuteProposal(description2, proposal2.encodedFunction, {
-          governor: governor.connect(voter1),
-          treasury: treasury.connect(voter1),
-        }),
-        excecuteProposal(description3, proposal3.encodedFunction, {
-          governor: governor.connect(otherAddress),
-          treasury: treasury.connect(otherAddress),
-        }),
+        excecuteProposal(
+          ProposalFactory({
+            description: description1,
+            payee: otherAddress.address,
+            amount: "10",
+          }),
+          {
+            governor: governor.connect(deployer),
+            treasury: treasury.connect(deployer),
+          }
+        ),
+        excecuteProposal(
+          ProposalFactory({
+            description: description2,
+            payee: otherAddress.address,
+            amount: "10",
+          }),
+          {
+            governor: governor.connect(voter1),
+            treasury: treasury.connect(voter1),
+          }
+        ),
+        excecuteProposal(
+          ProposalFactory({
+            description: description3,
+            payee: otherAddress.address,
+            amount: "10",
+          }),
+          {
+            governor: governor.connect(otherAddress),
+            treasury: treasury.connect(otherAddress),
+          }
+        ),
       ]);
 
       // ASSERT
@@ -670,8 +691,11 @@ describe("Governor Contract", () => {
       await moveTime(minDelay + 1);
       await moveBlocks(1);
       await excecuteProposal(
-        excecutedDescription,
-        excecutedProposal.encodedFunction,
+        ProposalFactory({
+          description: excecutedDescription,
+          payee: otherAddress.address,
+          amount: "10",
+        }),
         {
           governor: governor.connect(deployer),
           treasury: treasury.connect(deployer),

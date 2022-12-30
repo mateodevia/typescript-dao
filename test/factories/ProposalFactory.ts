@@ -1,5 +1,6 @@
 import { Proposal, ProposalStates } from "../../scripts/api/types";
 
+/** Creates a default Proposal object */
 export const ProposalFactory = (args: Partial<Proposal>): Proposal => {
   const defaultProposal: Proposal = {
     id: "",

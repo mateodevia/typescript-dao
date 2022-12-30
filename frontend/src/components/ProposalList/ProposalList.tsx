@@ -34,15 +34,35 @@ export function ProposalList() {
   };
 
   const suscribeToProposals = async () => {
+    // When a vote is cast
+    const voteCast = await contracts.governor.filters.VoteCast();
+    provider.on(voteCast, () => {
+      fetchProposals();
+    });
+
     // When a proposal is created
     const proposalCreated = await contracts.governor.filters.ProposalCreated();
     provider.on(proposalCreated, () => {
       fetchProposals();
     });
 
-    // When a vote is cast
-    const voteCast = await contracts.governor.filters.VoteCast();
-    provider.on(voteCast, () => {
+    // When a proposal is enqueued
+    const proposalQueued = await contracts.governor.filters.ProposalQueued();
+    provider.on(proposalQueued, () => {
+      fetchProposals();
+    });
+
+    // When a proposal is excecuted
+    const ProposalExecuted =
+      await contracts.governor.filters.ProposalExecuted();
+    provider.on(ProposalExecuted, () => {
+      fetchProposals();
+    });
+
+    // When a proposal is canceled
+    const ProposalCanceled =
+      await contracts.governor.filters.ProposalCanceled();
+    provider.on(ProposalCanceled, () => {
       fetchProposals();
     });
   };
