@@ -26,7 +26,7 @@ export function ProposalDetail(props: { proposal: Proposal | null }) {
     (state: RootState) => state.selectedAccount
   );
 
-  if (!props.proposal || !contracts || !selectedAccount) return <div></div>;
+  if (!props.proposal || !contracts) return <div></div>;
 
   const handleVote = async (vote: VotingOptions) => {
     await apiWrapper(async () => {
@@ -101,7 +101,7 @@ export function ProposalDetail(props: { proposal: Proposal | null }) {
         </div>
         {/* Only show voting options if the selectedAccount is a voter and the proposal is pending */}
         {voters.some(
-          (v) => v.address.toLowerCase() === selectedAccount.toLowerCase()
+          (v) => v.address.toLowerCase() === selectedAccount?.toLowerCase()
         ) &&
           props.proposal.state === ProposalStates.Active && (
             <VotingButtons handleVote={handleVote} />
