@@ -3,7 +3,7 @@ export function Footer() {
     <>
       <div style={{ textAlign: "center", fontSize: "24px" }}>
         <h6 style={{ fontWeight: "lighter" }}>
-          © 2022 Created by <b>Mateo Devia</b>. Get to know me at{" "}
+          © 2022 Created by <b>Mateo Devia</b> &#x1F525;. Get to know me at{" "}
           <a
             href="https://mateodevia.com"
             style={{
@@ -14,7 +14,6 @@ export function Footer() {
           >
             mateodevia.com
           </a>{" "}
-          &#x1F525;
         </h6>
       </div>
     </>

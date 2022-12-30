@@ -89,16 +89,31 @@ export function Header() {
         }}
       >
         <h1 style={{ marginBottom: "10px" }}>
-          Get your first{" "}
-          <span style={{ color: colors.accent }}>DAO proposal</span> done!
+          We currently have{" "}
+          <span style={{ color: colors.accent }}>
+            {treasuryBalance ?? 0} ETH
+          </span>{" "}
+          available!
         </h1>
-        {treasuryBalance ? (
-          <h3 style={{ marginBottom: "20px", marginTop: "0px" }}>
-            We have {treasuryBalance} ETH available
-          </h3>
-        ) : (
-          <></>
-        )}
+        <h3 style={{ margin: "0px" }}>
+          What do you propose we do with this money?
+        </h3>
+        <p
+          style={{
+            fontWeight: "lighter",
+            marginTop: "8px",
+            marginBottom: "15px",
+            fontSize: "14px",
+          }}
+        >
+          Learn more about this proyect{" "}
+          <a
+            href="https://github.com/mateodevia/typescript-dao"
+            style={{ color: colors.accent, fontWeight: "initial" }}
+          >
+            here
+          </a>
+        </p>
       </Container>
       {renderContent()}
     </>
