@@ -13,6 +13,7 @@ import { ethers } from "hardhat";
 import moveBlocks from "../utils/moveBlocks";
 import { VotingOptions } from "../scripts/api/types";
 import moveTime from "../utils/moveTime";
+import { ProposalFactory } from "./factories/ProposalFactory";
 
 describe("Treasury Contract", () => {
   const tokenSupply = 1000;
@@ -73,8 +74,11 @@ describe("Treasury Contract", () => {
     );
     await moveBlocks(votingPeriod);
     await queueProposal(
-      excecutedDescription,
-      excecutedProposal.encodedFunction,
+      ProposalFactory({
+        description: excecutedDescription,
+        payee: otherAddress.address,
+        amount: "10",
+      }),
       {
         governor: governor.connect(voter1),
         treasury: treasury.connect(voter1),
@@ -83,8 +87,11 @@ describe("Treasury Contract", () => {
     await moveTime(minDelay + 1);
     await moveBlocks(1);
     await excecuteProposal(
-      excecutedDescription,
-      excecutedProposal.encodedFunction,
+      ProposalFactory({
+        description: excecutedDescription,
+        payee: otherAddress.address,
+        amount: "10",
+      }),
       {
         governor: governor.connect(deployer),
         treasury: treasury.connect(deployer),

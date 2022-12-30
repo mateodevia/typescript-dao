@@ -96,7 +96,7 @@ describe("Token Contract", () => {
     });
   });
   describe("When queryng the share holders", () => {
-    it.only("Should return all the addresses that hold tokens", async () => {
+    it("Should return all the addresses that hold tokens", async () => {
       // ARRANGE
       const signers = await ethers.getSigners();
       const voters = signers.slice(1, 6);
