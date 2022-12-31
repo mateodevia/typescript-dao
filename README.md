@@ -42,17 +42,19 @@ Any user can create a proposal. A proposal consist of a target address (address 
 ![image](https://user-images.githubusercontent.com/35933399/210134494-910f0d89-73eb-43af-b1e7-ca13b8393d1b.png)
 
 ### Vote for a proposal
+Only the voters can vote for a proposal. When a proposal´s state is active the voters are able to vote in favor, against, or abstain if they have enough ethers to pay the gas fee for voting.
 ![image](https://user-images.githubusercontent.com/35933399/210134765-2d5fcd99-533c-4957-baef-9f99c5e9a6c9.png)
 
 ### Enqueue the proposal
+When a proposal succeeds, any user is allowed to enqueue the proposal if they have enough ethers to pay the gas fee for enqueuing.
 ![image](https://user-images.githubusercontent.com/35933399/210134935-3d3e2608-4a6a-4dbe-9414-7ed4e59b937c.png)
 
 ### Excecute the proposal
+When a proposal is queued, any user is allowed to execute the proposal if they have enough ethers to pay the gas fee for execution.
 ![image](https://user-images.githubusercontent.com/35933399/210134955-7291799f-8fe0-4215-b0ab-83a8fc68512b.png)
 
 
 # Demo
-
 You can try the app [__right here__](https://github.com/mateodevia)
 
 To be able to vote you can import the following addresses in you metamask:
@@ -63,6 +65,7 @@ To be able to vote you can import the following addresses in you metamask:
 TODO
 
 # Run the project on your machine
+TODO
 
 ```shell
 hardhat run --network ropsten scripts/deploy.ts
