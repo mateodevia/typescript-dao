@@ -8,7 +8,7 @@ This DAO was developed using Hardhat + Typescript + React as the main tecnologic
 
 # Table of Contents
 
-- [About the proyect](#about-the-proyect)
+- [About the project](#about-the-project)
 - [Main Features](#main-features)
 - [Demo](#demo)
 - [Architecture and Design](#architecture-and-design)
@@ -16,8 +16,8 @@ This DAO was developed using Hardhat + Typescript + React as the main tecnologic
 - [Author](#author)
 - [License](#license)
 
-# About the proyect
-This is a personal proyect created with the goal of exploring and understanding the lastest Ethereum tecnologies, and building a complete fullstack blockchain app from scratch. It was not aim to be a real life solution, although posible extensions will be always welcome. Special thanks to this [__Dapp University video__](https://www.youtube.com/watch?v=LI4Ns77Upug) which served as inspiration for the basic idea.
+# About the project
+This is a personal project created with the goal of exploring and understanding the lastest Ethereum tecnologies, and building a complete fullstack blockchain app from scratch. It was not aim to be a real life solution, although posible extensions will be always welcome. Special thanks to this [__Dapp University video__](https://www.youtube.com/watch?v=LI4Ns77Upug) which served as inspiration for the basic idea.
 
 # Main Features
 During deployment a treasury is created with some initial funds (ethers). Those funds are given by the address who deploys the app. The idea is that users of the DAO should get to agreements on how this money should be spent by deciding what addresses should receive payments from the treasury money. These decisions are made through proposals. Each proposal suggests a transaction that should be made with the treasury money and has a description to justify why that transaction should be made. The proposals undergo a voting process to determine if they are approved. In case of approval, the proposed transaction is excecuted.
