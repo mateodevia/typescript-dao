@@ -1,6 +1,6 @@
 # Typescript - Hardhard DAO
 
-This projects is a basic versión of a DAO that allows users to manage a cripto currency fund by making proposals over how should the funds be spent.
+This projects is a basic versión of a DAO that allows users to manage a cripto currency fund by making proposals over how the funds should be spent.
 
 This DAO was developed using Hardhat + Typescript + React as the main tecnological stack.
 
