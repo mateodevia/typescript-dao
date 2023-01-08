@@ -48,6 +48,7 @@ export const deploy = async (
   const supply = ethers.utils.parseEther(tokenSupply.toString());
   const token = await new Token__factory(participants.deployer).deploy(supply);
   await token.deployed();
+  console.log("token deployed");
 
   // Divide the total token supply (stocks) in the amount of initial investors
   const amount = ethers.utils.parseEther(
@@ -55,19 +56,15 @@ export const deploy = async (
   );
 
   // Give the corresponding part to each voter
-  await Promise.all([
-    ...participants.investors.map((investor) =>
-      token.transfer(investor.address, amount)
-    ),
-  ]);
+  for (const investor of participants.investors) {
+    await token.transfer(investor.address, amount);
+  }
 
   // Each voter should delagate its voting power (represented by their tokens)
   // In this case each voter delagates to itself
-  await Promise.all([
-    ...participants.investors.map((investor) =>
-      token.connect(investor).delegate(investor.address)
-    ),
-  ]);
+  for (const investor of participants.investors) {
+    await token.connect(investor).delegate(investor.address);
+  }
 
   // Deploy time lock
   const timeLock = await new TimeLock__factory(participants.deployer).deploy(
@@ -76,6 +73,7 @@ export const deploy = async (
     []
   );
   await timeLock.deployed();
+  console.log("timeLock deployed");
 
   // Deploy Governor
   const governor = await new MyGovernor__factory(participants.deployer).deploy(
@@ -86,6 +84,7 @@ export const deploy = async (
     votingConfig.votingDelay
   );
   await governor.deployed();
+  console.log("governor deployed");
 
   // Setup governance contracts
   const proposerRole = await timeLock.PROPOSER_ROLE();
@@ -106,12 +105,14 @@ export const deploy = async (
     participants.deployer.address
   );
   await revokeTx.wait(1);
+  console.log("stablished roles");
 
   // Deploy Treasury with initial funds
   const treasury = await new Treasury__factory(participants.deployer).deploy({
     value: ethers.utils.parseEther(treasuryInitialSupply.toString()),
   });
   await treasury.deployed();
+  console.log("treasury deployed");
   // Set timelock as the owner of the box
   const transferOwnershipTx = await treasury.transferOwnership(
     timeLock.address

@@ -15,10 +15,15 @@ async function main() {
   const [deployer, voter1, voter2, voter3, voter4, voter5] =
     await ethers.getSigners();
 
+  console.log(
+    "Balance of the deployer:",
+    ethers.utils.formatEther(await ethers.provider.getBalance(deployer.address))
+  );
+
   // Deploy contracts
   const { token, timeLock, governor, treasury } = await deploy(
     1000,
-    50,
+    0.5,
     { deployer, investors: [voter1, voter2, voter3, voter4, voter5] },
     {
       minDelay: constants.minDelay,
