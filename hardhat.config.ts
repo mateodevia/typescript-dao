@@ -41,18 +41,19 @@ const config: HardhatUserConfig = {
       chainId: 1337,
       allowUnlimitedContractSize: true,
     },
-    sepolia: {
-      url: process.env.SEPOLIA_URL || "",
-      accounts: [
-        process.env.PRIVATE_KEY_1 as string,
-        process.env.PRIVATE_KEY_2 as string,
-        process.env.PRIVATE_KEY_3 as string,
-        process.env.PRIVATE_KEY_4 as string,
-        process.env.PRIVATE_KEY_5 as string,
-        process.env.PRIVATE_KEY_6 as string,
-      ],
-      blockGasLimit: 12450000 * 1000,
-    },
+    // Uncomment this networks just for real deployments
+    // sepolia: {
+    //   url: process.env.SEPOLIA_URL || "",
+    //   accounts: [
+    //     process.env.PRIVATE_KEY_1 as string,
+    //     process.env.PRIVATE_KEY_2 as string,
+    //     process.env.PRIVATE_KEY_3 as string,
+    //     process.env.PRIVATE_KEY_4 as string,
+    //     process.env.PRIVATE_KEY_5 as string,
+    //     process.env.PRIVATE_KEY_6 as string,
+    //   ],
+    //   blockGasLimit: 12450000 * 1000,
+    // },
   },
   gasReporter: {
     enabled: process.env.REPORT_GAS !== undefined,
