@@ -59,6 +59,15 @@ function App() {
       _provider.getSigner(0)
     );
 
+    console.log(
+      "tokenContract",
+      await _provider?.getCode(tokenContract.address)
+    );
+
+    if ((await _provider?.getCode(tokenContract.address)) === "0x") {
+      return;
+    }
+
     setProvider(_provider);
     setContracts({
       token: tokenContract as Token,
@@ -108,7 +117,7 @@ function App() {
             maxWidth="md"
             sx={{
               color: "white",
-              height: "100%",
+              height: "90vh",
               textAlign: "center",
               paddingTop: "20vh",
             }}
@@ -116,14 +125,16 @@ function App() {
             <h1 style={{ marginBottom: "10px" }}>
               Please download{" "}
               <span style={{ color: colors.accent }}> metamask</span> to use
-              this awesome DAO
+              this awesome DAO. Also make sure you are connected to the{" "}
+              <span style={{ color: colors.accent }}> Sepolia</span> testnet and
+              reload the window.
             </h1>
             <Button
               href="https://metamask.io/download/"
               variant="contained"
-              sx={accentButton}
+              sx={{ ...accentButton, marginTop: "20px" }}
             >
-              Download now
+              Download Metamask
             </Button>
           </Container>
         )}
