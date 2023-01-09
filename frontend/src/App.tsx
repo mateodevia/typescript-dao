@@ -59,11 +59,6 @@ function App() {
       _provider.getSigner(0)
     );
 
-    console.log(
-      "tokenContract",
-      await _provider?.getCode(tokenContract.address)
-    );
-
     if ((await _provider?.getCode(tokenContract.address)) === "0x") {
       return;
     }
