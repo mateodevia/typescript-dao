@@ -1,6 +1,6 @@
+/* eslint-disable no-unused-vars */
 // eslint-disable-next-line node/no-unpublished-import
 
-/* eslint-disable no-unused-vars */
 export enum ProposalStates {
   Pending = 0,
   Active = 1,

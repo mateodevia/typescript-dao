@@ -1,3 +1,6 @@
+
+
+
 export enum ProposalStates {
   Pending = 0,
   Active = 1,

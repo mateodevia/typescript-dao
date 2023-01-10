@@ -29,7 +29,11 @@ try {
       `"../typechain"`
     );
 
-    fs.writeFileSync(path.join(destAPI, file), fixTypeChain, "utf-8");
+    const fixEsLint = fixTypeChain
+      .replace(`// eslint-disable-next-line node/no-unpublished-import`, "")
+      .replace(`/* eslint-disable no-unused-vars */`, "");
+
+    fs.writeFileSync(path.join(destAPI, file), fixEsLint, "utf-8");
   });
   console.log("Successfuly build front-end API");
 } catch (err) {

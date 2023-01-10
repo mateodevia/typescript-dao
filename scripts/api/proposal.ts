@@ -1,4 +1,3 @@
-import async from "async";
 import { BigNumber } from "ethers";
 import { ethers } from "hardhat";
 import { MyGovernor, Treasury } from "../../typechain";
@@ -138,40 +137,42 @@ export const getProposals = async (contracts: {
   const filters = await contracts.governor.filters.ProposalCreated();
   const logs = await contracts.governor.queryFilter(filters, 0, "latest");
   const events = logs.map((log) => contracts.governor.interface.parseLog(log));
-  const proposals = await async.map(events, async (event: any) => {
-    const [state, votes] = await Promise.all([
-      await contracts.governor.state(event.args.proposalId),
-      await contracts.governor.proposalVotes(event.args.proposalId),
-    ]);
-    let proposalParams;
-    try {
-      proposalParams = contracts.treasury.interface.decodeFunctionData(
-        "releaseFunds",
-        event.args.calldatas[0]
-      );
-    } catch (e) {
-      proposalParams = {
-        _payee: "Unparseadble proposal",
-        _amount: "Unparseadble proposal",
+  const proposals = await Promise.all(
+    events.map(async (event: any) => {
+      const [state, votes] = await Promise.all([
+        await contracts.governor.state(event.args.proposalId),
+        await contracts.governor.proposalVotes(event.args.proposalId),
+      ]);
+      let proposalParams;
+      try {
+        proposalParams = contracts.treasury.interface.decodeFunctionData(
+          "releaseFunds",
+          event.args.calldatas[0]
+        );
+      } catch (e) {
+        proposalParams = {
+          _payee: "Unparseadble proposal",
+          _amount: "Unparseadble proposal",
+        };
+      }
+      return {
+        // Mirar por qué el proposalId no se está parseando bien a string
+        id: event.args.proposalId.toString(),
+        proposer: event.args.proposer,
+        startBlock: event.args.startBlock.toNumber(),
+        endBlock: event.args.endBlock.toNumber(),
+        description: event.args.description,
+        state,
+        votes: {
+          againstVotes: ethers.utils.formatEther(votes.againstVotes),
+          forVotes: ethers.utils.formatEther(votes.forVotes),
+          abstainVotes: ethers.utils.formatEther(votes.abstainVotes),
+        },
+        payee: proposalParams._payee,
+        amount: ethers.utils.formatEther(proposalParams._amount),
       };
-    }
-    return {
-      // Mirar por qué el proposalId no se está parseando bien a string
-      id: event.args.proposalId.toString(),
-      proposer: event.args.proposer,
-      startBlock: event.args.startBlock.toNumber(),
-      endBlock: event.args.endBlock.toNumber(),
-      description: event.args.description,
-      state,
-      votes: {
-        againstVotes: ethers.utils.formatEther(votes.againstVotes),
-        forVotes: ethers.utils.formatEther(votes.forVotes),
-        abstainVotes: ethers.utils.formatEther(votes.abstainVotes),
-      },
-      payee: proposalParams._payee,
-      amount: ethers.utils.formatEther(proposalParams._amount),
-    };
-  });
+    })
+  );
 
   return proposals;
 };
