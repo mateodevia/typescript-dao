@@ -87,7 +87,7 @@ Private key: 0x8b3a350cf5c34c9194ca85829a2df0ec3153be0318b5e2d3348e872092edffba
 > :warning: **These are the Hardhat default development accounts, thus they are publicly known. Any funds sent to them on thr Mainnet or any other live network WILL BE LOST**
 
 # Architecture and Design
-TODO
+![image](https://user-images.githubusercontent.com/35933399/212576702-7a948d20-daec-48b8-9585-ed3bd32790a3.png)
 
 # Run the project on your machine
 TODO
