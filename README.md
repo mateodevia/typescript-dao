@@ -89,6 +89,21 @@ Private key: 0x8b3a350cf5c34c9194ca85829a2df0ec3153be0318b5e2d3348e872092edffba
 # Architecture and Design
 ![image](https://user-images.githubusercontent.com/35933399/212576702-7a948d20-daec-48b8-9585-ed3bd32790a3.png)
 
+### Token Contract
+It is an ERC20 compliant currency contract. It uses the ERC20Votes open zeppeling library to implement the specification. This cripto currency is used to determine the amount of voting power one have on the DAO. The more tokens one posseses, the more weight one´s vote will have during the voting process.
+
+### Timelock Contact
+This contract is in charge of controling time gaps between the varios stages on the voting process. It determines when the actions can take place and when they cannot.
+
+### Treasury Contract
+This contract is used to store the funds of the DAO. This contract´s adress will have the ethereum funds that are available.
+
+### Governor
+This is the main contract of the project, it is in charge of orchestrating he other contracts in order to perform the creation of proposals, the voting processes and all the main features of the DAO. It uses the token contracts to determine the voting power of each voter during the voting process. It uses the timelock to get a sense of time during the excecution of the processes, and it controls the treasury contract to release funds whenever a proposal is approved.
+
+### Frontend
+This component is a React JS built client that exposes a user interface for humans to interact with the developed smart contracts. It uses the library Ethers JS to connect directly to the smart contracts, and for state management in the app, it uses Redux and React Context in conjuction.
+
 # Run the project on your machine
 TODO
 
