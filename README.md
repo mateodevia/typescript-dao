@@ -105,11 +105,38 @@ This is the main contract of the project, it is in charge of orchestrating he ot
 This component is a React JS built client that exposes a user interface for humans to interact with the developed smart contracts. It uses the library Ethers JS to connect directly to the smart contracts, and for state management in the app, it uses Redux and React Context in conjuction.
 
 # Run the project on your machine
-TODO
 
+As a prerequisit you need to have node JS installed on your computer, and metamask installed on your browser
+
+Install Hardhat globally
 ```shell
-hardhat run --network ropsten scripts/deploy.ts
+npm i hardhat -g
 ```
+Install other dependencies
+```shell
+npm i
+```
+Start a local ethereum network
+```shell
+hardhat node
+```
+Deploy the contracts on the the network you just started
+```shell
+hardhat node run scripts/deploy.ts --network sepolia
+```
+Move into the frontend folder
+```shell
+cd frontend
+```
+Install frontend dependencies
+```shell
+npm i
+```
+Start the frontend app
+```shell
+npm start
+```
+The app should open up on your browser. To use it you can use the hardhat addresses listed on the demo section of this document.
 
 # Author
 
