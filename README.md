@@ -108,21 +108,17 @@ This component is a React JS built client that exposes a user interface for huma
 
 As a prerequisit you need to have node JS installed on your computer, and metamask installed on your browser
 
-Install Hardhat globally
-```shell
-npm i hardhat -g
-```
-Install other dependencies
+Install dependencies
 ```shell
 npm i
 ```
 Start a local ethereum network
 ```shell
-hardhat node
+npx hardhat node
 ```
 Deploy the contracts on the the network you just started
 ```shell
-hardhat node run scripts/deploy.ts --network sepolia
+npx hardhat node run scripts/deploy.ts --network sepolia
 ```
 Move into the frontend folder
 ```shell
