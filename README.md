@@ -118,7 +118,7 @@ npx hardhat node
 ```
 Deploy the contracts on the the network you just started
 ```shell
-npx hardhat node run scripts/deploy.ts --network sepolia
+npx hardhat node run scripts/deploy.ts --network localhost
 ```
 Move into the frontend folder
 ```shell
