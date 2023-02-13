@@ -136,7 +136,7 @@ The app should open up on your browser. To use it you can use the Hardhat addres
 
 # Author
 
-[__Mateo Devia__](https://github.com/mateodevia) -> [__Check out my personal web page!__](https://github.com/mateodevia)
+[__Mateo Devia__](https://github.com/mateodevia) -> [__Check out my personal web page!__](https:mateodevia.com)
 
 # License
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
