@@ -33,7 +33,6 @@ Any user can see the list of proposals that have been created. Each proposal sho
 ![image](https://user-images.githubusercontent.com/35933399/210135075-726f0cd5-6fa1-4ad6-86be-514daebe48fb.png)
 
 ### See the voters
-TODO
 ![image](https://user-images.githubusercontent.com/35933399/210135101-ec3a07d4-5f82-4a53-84d8-7fc49b9f3c2b.png)
 
 
